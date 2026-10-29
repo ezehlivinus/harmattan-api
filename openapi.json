@@ -193,6 +193,108 @@
         "summary": "Liveness and database connectivity check",
         "tags": ["health"]
       }
+    },
+    "/v1/wallets": {
+      "post": {
+        "description": "Identified by an email, a phone number or both; each must be unique. Opens a zero balance in every supported currency.",
+        "operationId": "WalletsController_create",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateWalletRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The new wallet.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Wallet"
+                },
+                "example": {
+                  "id": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b",
+                  "email": "ada@example.com",
+                  "phone": "+2348012345678",
+                  "createdAt": "2026-10-29T12:00:00.000Z",
+                  "balances": [
+                    {
+                      "currency": "cNGN",
+                      "amount": "0.000000"
+                    },
+                    {
+                      "currency": "cGHS",
+                      "amount": "0.000000"
+                    },
+                    {
+                      "currency": "cXAF",
+                      "amount": "0.000000"
+                    },
+                    {
+                      "currency": "USDx",
+                      "amount": "0.000000"
+                    },
+                    {
+                      "currency": "EURx",
+                      "amount": "0.000000"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing contact, invalid email or invalid phone number.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "message": "Request validation failed",
+                    "details": {
+                      "issues": [
+                        {
+                          "path": "phone",
+                          "message": "Invalid phone number"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "A wallet with this email or phone already exists.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "WALLET_ALREADY_EXISTS",
+                    "message": "A wallet with this email already exists",
+                    "details": {
+                      "field": "email"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Create a wallet",
+        "tags": ["wallets"]
+      }
     }
   },
   "info": {
@@ -204,6 +306,97 @@
   "tags": [],
   "servers": [],
   "components": {
-    "schemas": {}
+    "schemas": {
+      "CreateWalletRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "description": "Trimmed and lowercased; unique",
+            "example": "ada@example.com",
+            "type": "string"
+          },
+          "phone": {
+            "description": "Any common format; stored as E.164; numbers without +country are Nigerian",
+            "example": "0801 234 5678",
+            "type": "string"
+          }
+        }
+      },
+      "Wallet": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "example": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b"
+          },
+          "email": {
+            "nullable": true,
+            "example": "ada@example.com",
+            "type": "string"
+          },
+          "phone": {
+            "nullable": true,
+            "example": "+2348012345678",
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "example": "2026-10-29T12:00:00.000Z"
+          },
+          "balances": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+                  "description": "Supported stablecoin",
+                  "example": "cNGN"
+                },
+                "amount": {
+                  "type": "string",
+                  "example": "0.000000"
+                }
+              },
+              "required": ["currency", "amount"],
+              "additionalProperties": false
+            },
+            "description": "One entry per currency, in this order: cNGN, cGHS, cXAF, USDx, EURx"
+          }
+        },
+        "required": ["id", "email", "phone", "createdAt", "balances"],
+        "additionalProperties": false
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string",
+                "example": "VALIDATION_ERROR"
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "type": "object",
+                "additionalProperties": {}
+              }
+            },
+            "required": ["code", "message", "details"],
+            "additionalProperties": false
+          }
+        },
+        "required": ["error"],
+        "additionalProperties": false
+      }
+    }
   }
 }
