@@ -1,5 +1,6 @@
 import type { TransactionContext } from '../../../../shared/application/unit-of-work.js';
 import type { Money } from '../../../../shared/domain/money.js';
+import type { BalanceChange } from '../../domain/balance-change.js';
 import type { Posting } from '../../domain/posting.js';
 import type { TransactionView } from '../transaction.view.js';
 
@@ -17,8 +18,12 @@ export interface NewTransaction {
 }
 
 export interface LedgerRepository {
-  /** Adds `amount` to the wallet's balance atomically; returns the new balance. Throws `WalletNotFoundError`. */
-  credit(walletId: string, amount: Money, tx: TransactionContext): Promise<Money>;
+  /**
+   * Applies all changes atomically, in (walletId, currency) order; returns the new balances in
+   * the order given. A debit never takes a balance below zero: throws `InsufficientFundsError`
+   * (or `WalletNotFoundError` when the wallet does not exist).
+   */
+  applyBalanceChanges(changes: BalanceChange[], tx: TransactionContext): Promise<Money[]>;
   /** Stores the transaction row and its postings (which must sum to zero per currency). */
   record(
     transaction: NewTransaction,

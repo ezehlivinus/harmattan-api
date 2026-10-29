@@ -594,6 +594,155 @@
         "summary": "Deposit (simulated)",
         "tags": ["payments"]
       }
+    },
+    "/v1/wallets/{walletId}/swaps": {
+      "post": {
+        "description": "Debits `amount` of fromCurrency and credits roundDown(amount × rate, 6) of toCurrency at the current rate (see GET /v1/fx/rates); the rate, its source and refresh time are recorded. Fails without changing anything if the balance does not cover the amount.",
+        "operationId": "SwapsController_swap",
+        "parameters": [
+          {
+            "name": "walletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique per wallet and request; 1-255 visible ASCII characters, e.g. a UUID.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SwapRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Swapped (or the replayed original response).",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this is the stored response of an earlier identical request",
+                "schema": {
+                  "type": "string",
+                  "enum": ["true"]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SwapResult"
+                },
+                "example": {
+                  "transaction": {
+                    "id": "019a3b5d-0a1b-7c2d-8e3f-4a5b6c7d8e9f",
+                    "type": "SWAP",
+                    "sourceWalletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b",
+                    "destinationWalletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b",
+                    "sourceAmount": "1000.000000",
+                    "sourceCurrency": "cNGN",
+                    "destinationAmount": "0.625000",
+                    "destinationCurrency": "USDx",
+                    "rate": "0.000625000000000000",
+                    "rateSource": "LIVE",
+                    "rateFetchedAt": "2026-10-29T00:02:31.000Z",
+                    "createdAt": "2026-10-29T12:00:00.000Z"
+                  },
+                  "balances": [
+                    {
+                      "currency": "cNGN",
+                      "amount": "600.000000"
+                    },
+                    {
+                      "currency": "USDx",
+                      "amount": "0.625000"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing Idempotency-Key, invalid wallet id, currency or amount.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "message": "Request validation failed",
+                    "details": {
+                      "issues": [
+                        {
+                          "path": "toCurrency",
+                          "message": "Invalid option"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No wallet with this id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "WALLET_NOT_FOUND",
+                    "message": "Wallet not found",
+                    "details": {
+                      "walletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "INSUFFICIENT_FUNDS, SAME_CURRENCY, AMOUNT_TOO_SMALL (converts to less than 0.000001) or IDEMPOTENCY_KEY_REUSED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "INSUFFICIENT_FUNDS",
+                    "message": "Insufficient USDx balance",
+                    "details": {
+                      "currency": "USDx",
+                      "amount": "5.000001"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Swap between two currencies of a wallet",
+        "tags": ["payments"]
+      }
     }
   },
   "info": {
@@ -964,6 +1113,60 @@
           "rateFetchedAt",
           "createdAt"
         ],
+        "additionalProperties": false
+      },
+      "SwapRequest": {
+        "type": "object",
+        "properties": {
+          "fromCurrency": {
+            "type": "string",
+            "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+            "description": "Supported stablecoin",
+            "example": "cNGN"
+          },
+          "toCurrency": {
+            "type": "string",
+            "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+            "description": "Supported stablecoin",
+            "example": "cNGN"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Amount of fromCurrency to convert",
+            "example": "1500.25"
+          }
+        },
+        "required": ["fromCurrency", "toCurrency", "amount"]
+      },
+      "SwapResult": {
+        "type": "object",
+        "properties": {
+          "transaction": {
+            "$ref": "#/components/schemas/Transaction"
+          },
+          "balances": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+                  "description": "Supported stablecoin",
+                  "example": "cNGN"
+                },
+                "amount": {
+                  "type": "string",
+                  "example": "1500.250000"
+                }
+              },
+              "required": ["currency", "amount"],
+              "additionalProperties": false
+            },
+            "description": "Balances after the swap: source currency, then destination currency"
+          }
+        },
+        "required": ["transaction", "balances"],
         "additionalProperties": false
       }
     }

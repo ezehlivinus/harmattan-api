@@ -39,3 +39,22 @@ export const depositResponse = z
     }),
   })
   .meta({ id: 'DepositResult' });
+
+export const swapBody = z
+  .object({
+    fromCurrency: currencyCode,
+    toCurrency: currencyCode,
+    amount: decimalAmount.meta({ description: 'Amount of fromCurrency to convert' }),
+  })
+  .meta({ id: 'SwapRequest' });
+
+export type SwapBody = z.infer<typeof swapBody>;
+
+export const swapResponse = z
+  .object({
+    transaction: transactionResponse,
+    balances: z
+      .array(z.object({ currency: currencyCode, amount }))
+      .meta({ description: 'Balances after the swap: source currency, then destination currency' }),
+  })
+  .meta({ id: 'SwapResult' });

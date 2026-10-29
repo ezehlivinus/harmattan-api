@@ -1,4 +1,5 @@
 import { Money } from '../../../shared/domain/money.js';
+import type { BalanceChange } from './balance-change.js';
 import { AmountLimitExceededError } from './errors.js';
 import { type Posting, credit, debit } from './posting.js';
 
@@ -27,5 +28,9 @@ export class Deposit {
       credit({ type: 'WALLET', walletId }, amount),
       debit({ type: 'EXTERNAL_SETTLEMENT' }, amount),
     ]);
+  }
+
+  get balanceChanges(): BalanceChange[] {
+    return [{ walletId: this.walletId, direction: 'CREDIT', amount: this.amount }];
   }
 }

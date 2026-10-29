@@ -33,7 +33,8 @@ export class DepositHandler implements ICommandHandler<DepositCommand> {
       },
       HttpStatus.CREATED,
       async (tx) => {
-        const balance = await this.ledger.credit(deposit.walletId, deposit.amount, tx);
+        const [balance] = await this.ledger.applyBalanceChanges(deposit.balanceChanges, tx);
+        if (balance === undefined) throw new Error('No balance returned for the deposit');
         const transaction = await this.ledger.record(
           {
             id: newId(),

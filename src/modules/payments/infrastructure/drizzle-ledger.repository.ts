@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq, sql } from 'drizzle-orm';
+import { and, eq, gte, sql } from 'drizzle-orm';
 import type { TransactionContext } from '../../../shared/application/unit-of-work.js';
 import { WalletNotFoundError } from '../../../shared/domain/errors.js';
 import { newId } from '../../../shared/domain/id.js';
 import { Money } from '../../../shared/domain/money.js';
+import type { DatabaseTransaction } from '../../../shared/infrastructure/database/database.js';
 import { drizzleTx } from '../../../shared/infrastructure/database/drizzle-unit-of-work.js';
 import {
   balances,
@@ -12,12 +13,34 @@ import {
 } from '../../../shared/infrastructure/database/schema/index.js';
 import type { LedgerRepository, NewTransaction } from '../application/ports/ledger.repository.js';
 import type { TransactionView } from '../application/transaction.view.js';
+import type { BalanceChange } from '../domain/balance-change.js';
+import { InsufficientFundsError } from '../domain/errors.js';
 import type { Posting } from '../domain/posting.js';
 
 @Injectable()
 export class DrizzleLedgerRepository implements LedgerRepository {
-  async credit(walletId: string, amount: Money, ctx: TransactionContext): Promise<Money> {
-    const [row] = await drizzleTx(ctx)
+  async applyBalanceChanges(changes: BalanceChange[], ctx: TransactionContext): Promise<Money[]> {
+    const tx = drizzleTx(ctx);
+    // Lock rows in one global order so two operations never wait on each other in a cycle.
+    const ordered = changes
+      .map((change, index) => ({ change, index }))
+      .sort(
+        (a, b) =>
+          compare(a.change.walletId, b.change.walletId) ||
+          compare(a.change.amount.currency, b.change.amount.currency),
+      );
+    const results: Money[] = new Array<Money>(changes.length);
+    for (const { change, index } of ordered) {
+      results[index] =
+        change.direction === 'CREDIT'
+          ? await this.credit(tx, change.walletId, change.amount)
+          : await this.debit(tx, change.walletId, change.amount);
+    }
+    return results;
+  }
+
+  private async credit(tx: DatabaseTransaction, walletId: string, amount: Money): Promise<Money> {
+    const [row] = await tx
       .update(balances)
       .set({
         amount: sql`${balances.amount} + ${amount.toString()}::numeric`,
@@ -30,6 +53,32 @@ export class DrizzleLedgerRepository implements LedgerRepository {
       throw new WalletNotFoundError(walletId);
     }
     return Money.of(row.amount, amount.currency);
+  }
+
+  /** Conditional decrement: only succeeds if the balance covers the amount (no negative balance). */
+  private async debit(tx: DatabaseTransaction, walletId: string, amount: Money): Promise<Money> {
+    const value = amount.toString();
+    const [row] = await tx
+      .update(balances)
+      .set({ amount: sql`${balances.amount} - ${value}::numeric`, updatedAt: sql`now()` })
+      .where(
+        and(
+          eq(balances.walletId, walletId),
+          eq(balances.currency, amount.currency),
+          gte(balances.amount, sql`${value}::numeric`),
+        ),
+      )
+      .returning({ amount: balances.amount });
+    if (row !== undefined) {
+      return Money.of(row.amount, amount.currency);
+    }
+    const exists = await tx
+      .select({ walletId: balances.walletId })
+      .from(balances)
+      .where(and(eq(balances.walletId, walletId), eq(balances.currency, amount.currency)));
+    throw exists.length === 0
+      ? new WalletNotFoundError(walletId)
+      : new InsufficientFundsError(amount.currency, value);
   }
 
   async record(
@@ -84,4 +133,8 @@ export class DrizzleLedgerRepository implements LedgerRepository {
       createdAt: row.createdAt.toISOString(),
     };
   }
+}
+
+function compare(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
 }
