@@ -30,7 +30,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [-] System accounts seeded: not needed. System accounts are identified by `(account_type, currency)` on postings, not rows (ADR-008 update). The container seed step moves to Phase 3 (FX fallback table)
 - [x] First migration generated + reviewed by hand (`0000_init.sql`; review fixed the phone regex escaping and the index null ordering)
 - [x] `UnitOfWork` port + `DrizzleUnitOfWork` (retry once on 40P01/40001; real-deadlock e2e; `pgErrorOf` helper; e2e files run serially)
-- [ ] Error code enum + global exception filter (also wraps Nest's built-in HttpExceptions, e.g. health 503, in the error envelope) + Zod/Standard Schema pipe; shared `DecimalString`
+- [x] Error code enum + global exception filter (also wraps Nest's built-in HttpExceptions, e.g. health 503, in the error envelope) + Zod/Standard Schema pipe (Nest 12's built-in `StandardSchemaValidationPipe`, no custom pipe); shared `decimalAmount` / `currencyCode`
 
 ## Phase 2: Wallets + Deposits + Idempotency (FR-1, FR-2)
 - [ ] `CreateWalletCommand` (normalize email/E.164; 409 duplicate; 5 zero balances) → E1

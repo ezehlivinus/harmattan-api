@@ -44,11 +44,11 @@ Decision: Required `Idempotency-Key`. `(key, scope)` unique row with `requestHas
 Consequences: Exactly-once effect with no Redis or locks. Business failures roll back, so the key is not stored and a retry re-evaluates (documented). Keys kept indefinitely in the sandbox.
 
 ## ADR-006: Validation via Zod 4 / Standard Schema
-Proposed · 2026-10-29
+Accepted · 2026-10-29
 Context: NestJS 12 accepts Standard Schema in `@Body/@Query/@Param`; Swagger generation from Zod may need glue.
 Decision: Zod schemas are the source of truth (shared `DecimalString`, `CurrencyCode`). Verify OpenAPI emission (Nest docs → Zod 4 `toJSONSchema` → `nestjs-zod`).
 Consequences: If the OpenAPI glue costs more than 1h, use class-validator DTOs for request bodies and supersede.
-**Update 2026-10-29:** output side verified with no glue: `@nestjs/swagger` 12 converts Zod 4 schemas natively (`@ApiOkResponse({ standardSchema })`, via Zod's `~standard.jsonSchema`); literals → `enum`, `required` and `additionalProperties: false` emitted. Request side (Standard Schema in `@Body/@Query/@Param` + docs) still to verify with the first endpoint that takes a body.
+**Update 2026-10-29:** output side verified with no glue: `@nestjs/swagger` 12 converts Zod 4 schemas natively (`@ApiOkResponse({ standardSchema })`, via Zod's `~standard.jsonSchema`); literals → `enum`, `required` and `additionalProperties: false` emitted. Request side verified too: Nest 12's built-in `StandardSchemaValidationPipe` (global via `APP_PIPE`) validates `@Body/@Query/@Param({ schema })` and returns the parsed value, and Swagger documents a Zod `@Body` schema as the `requestBody` with no glue. No `nestjs-zod`, no class-validator.
 
 ## ADR-007: Money representation
 Accepted · 2026-10-29
