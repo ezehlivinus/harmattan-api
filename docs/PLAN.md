@@ -14,7 +14,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] Yarn 4 (`.yarnrc.yml` `nodeLinker: node-modules`, `packageManager` field)
 - [x] Replace oxlint → ESLint flat config + Prettier; `lint`, `format`, `typecheck` scripts (+ lint rule: `domain/` may not import Nest/Drizzle/HTTP or outer layers)
 - [x] husky + commitlint (`@commitlint/config-conventional`, case-insensitive `no-co-author-trailer` local rule, `scope-enum`)
-- [ ] Clean-arch folder skeleton (`shared/`, `modules/*/{domain,application,infrastructure,presentation}`), `CqrsModule`
+- [x] Clean-arch folder skeleton (`shared/`, `modules/*/{domain,application,infrastructure,presentation}`), `CqrsModule` (`.gitkeep` placeholders: delete each as real files land)
 - [ ] `@nestjs/config` with Zod-validated env
 - [ ] `@nestjs/drizzle` module + `drizzle.config.ts`; `db:generate` / `db:migrate` scripts (fallback per ADR-003)
 - [ ] Dockerfile (multi-stage) + `docker-compose.yml` (api, postgres + healthcheck); entrypoint: migrate → seed → start; root `postinstall: husky` must not break the image (husky is a devDep, no `.git`): use `HUSKY=0` and/or install prod deps without running scripts
