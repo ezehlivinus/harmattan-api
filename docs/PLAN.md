@@ -33,11 +33,11 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] Error code enum + global exception filter (also wraps Nest's built-in HttpExceptions, e.g. health 503, in the error envelope) + Zod/Standard Schema pipe (Nest 12's built-in `StandardSchemaValidationPipe`, no custom pipe); shared `decimalAmount` / `currencyCode`
 
 ## Phase 2: Wallets + Deposits + Idempotency (FR-1, FR-2)
-- [ ] `CreateWalletCommand` (normalize email/E.164; 409 duplicate; 5 zero balances) → E1
+- [x] `CreateWalletCommand` (normalize email/E.164; 409 duplicate; 5 zero balances) → E1 (`Clock` port added; repository ports in `application/ports/`)
 - [ ] `GetWalletQuery` (balances + `totalUsd` + `ratesAsOf`) → E2
 - [ ] Idempotency: interceptor (header, hash) + store inside UoW + replay + 422 on reuse
 - [ ] `DepositCommand` → E3
-- [ ] e2e: wallet duplicate (email, phone formats), deposit happy path, invalid amounts, replay, key reuse
+- [ ] e2e: ~~wallet duplicate (email, phone formats)~~ (done with E1), deposit happy path, invalid amounts, replay, key reuse
 
 ## Phase 3: FX (FR-3, FR-5), parallel track `@B`
 - [ ] Verify `open.er-api.com` response shape → LEARNINGS
