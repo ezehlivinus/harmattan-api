@@ -29,7 +29,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] CHECKs: `balances.amount >= 0`, `ledger_entries.amount <> 0`, `transactions` amounts `> 0`; currency column next to every amount (ADR-007); plus transaction shape/rate rules, normalized email, E.164 phone, idempotency key/hash format (35 constraint e2e tests)
 - [-] System accounts seeded: not needed. System accounts are identified by `(account_type, currency)` on postings, not rows (ADR-008 update). The container seed step moves to Phase 3 (FX fallback table)
 - [x] First migration generated + reviewed by hand (`0000_init.sql`; review fixed the phone regex escaping and the index null ordering)
-- [ ] `UnitOfWork` port + `DrizzleUnitOfWork` (retry once on 40P01/40001)
+- [x] `UnitOfWork` port + `DrizzleUnitOfWork` (retry once on 40P01/40001; real-deadlock e2e; `pgErrorOf` helper; e2e files run serially)
 - [ ] Error code enum + global exception filter (also wraps Nest's built-in HttpExceptions, e.g. health 503, in the error envelope) + Zod/Standard Schema pipe; shared `DecimalString`
 
 ## Phase 2: Wallets + Deposits + Idempotency (FR-1, FR-2)

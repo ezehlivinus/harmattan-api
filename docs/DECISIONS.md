@@ -78,6 +78,7 @@ Accepted · 2026-10-29
 Context: Clear boundaries make money rules easy to find and test. Writes (strict invariants) and reads (history, filters, USD totals) have different shapes.
 Decision: Per-module `domain / application / infrastructure / presentation`. Domain is framework-free. `@nestjs/cqrs` `CommandBus` for deposits, swaps, transfers, wallet creation; `QueryBus` for reads that go straight to Drizzle read models. `UnitOfWork` port wraps `db.transaction`. **No** event sourcing, sagas or separate read DB.
 Consequences: Business rules are unit-testable without a DB; money mutation has exactly one path. Costs some boilerplate, kept proportional (no repository for read-only queries, no domain events unless needed).
+**Update 2026-10-29 (transactions):** checked alternatives first. NestJS has no official transaction package; `nestjs-cls` + `@nestjs-cls/transactional` (Drizzle adapter available) is third-party (the Nest docs call `nestjs-cls` "not managed by the NestJS core team") and propagates the transaction implicitly through AsyncLocalStorage with a `@Transactional()` decorator. Kept the explicit port: `UnitOfWork.run(tx => ...)` with an opaque `TransactionContext` keeps the application layer free of framework decorators, makes the transaction boundary visible in every money handler, and owns the deadlock/serialization retry (once), which neither alternative provides.
 
 ## ADR-011: No Redis or queue initially
 Proposed · 2026-10-29
