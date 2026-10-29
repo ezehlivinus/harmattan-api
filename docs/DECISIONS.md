@@ -63,6 +63,7 @@ Postgres' `money` type is also rejected: its precision depends on the `lc_moneta
 Decision: Decimal strings in JSON (`"1500.25"`); `NUMERIC(38,6)` amounts, `NUMERIC(38,18)` rates; Drizzle `numeric` in string mode; `decimal.js` for arithmetic. Every amount column has a currency column beside it. Round **down** on conversion; reject input with more than 6 dp instead of rounding it.
 Consequences: No float anywhere; SQL and stored values stay human-readable; the DB rejects out-of-scale values. Rounding dust stays with the platform's FX pool (documented).
 **Update 2026-10-29:** amounts are returned with a fixed 6 decimals (`"1500.250000"`), the same text Postgres returns for `numeric(38,6)`, so every amount in the API has one canonical form. Input accepts 0–6 decimals. `Money` is non-negative (signs live in ledger postings); 32 integer digits max. Ids are UUIDv7 from Node's built-in `crypto.randomUUIDv7()` (Node ≥ 24.16), so no `uuid` dependency.
+**Update 2026-10-30 (valuation vs conversion):** money that *moves* (swaps, transfers) uses the stored 18-decimal rate: `roundDown(amount × rate, 6)`, and that exact rate is recorded. A USD *valuation* that moves nothing (wallet `usdValue`, `totalUsd`) divides exactly, `roundDown(amount ÷ unitsPerUsd, 6)`, so 9 EURx at 0.9 per USD shows 10.000000, not the 9.999999 the truncated cross rate would give. `totalUsd` is the sum of the per-balance values, so clients can check it.
 
 ## ADR-008: Double-entry ledger + transactions + materialized balances
 Accepted · 2026-10-29

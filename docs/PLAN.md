@@ -34,7 +34,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 
 ## Phase 2: Wallets + Deposits + Idempotency (FR-1, FR-2)
 - [x] `CreateWalletCommand` (normalize email/E.164; 409 duplicate; 5 zero balances) → E1 (`Clock` port added; repository ports in `application/ports/`)
-- [ ] `GetWalletQuery` (balances + `totalUsd` + `ratesAsOf`) → E2 (moved after Phase 3: needs FX rates)
+- [x] `GetWalletQuery` (balances + `totalUsd` + `ratesAsOf`) → E2 (built after Phase 3; per-balance `usdValue`, `ratesSource`; read model port + Drizzle read model)
 - [x] Idempotency: `@IdempotencyKey()` header decorator + `IdempotencyService` (canonical SHA-256, store inside UoW, replay with `Idempotent-Replayed`, 422 on reuse, concurrent loser replays the winner)
 - [x] `DepositCommand` → E3 (ledger: wallet +X / EXTERNAL_SETTLEMENT −X; 1e12 per-request cap)
 - [x] e2e: wallet duplicate (email, phone formats), deposit happy path, invalid amounts, replay, key reuse

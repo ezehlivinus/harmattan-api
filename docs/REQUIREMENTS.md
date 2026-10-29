@@ -101,7 +101,7 @@ Supported stablecoins: **cNGN, cGHS, cXAF, USDx, EURx**.
 | Req | Implemented by | Tested by | Status |
 |---|---|---|---|
 | FR-1 create wallet, email/phone, unique | E1 · `CreateWalletHandler`, unique indexes + CHECKs | `wallets-create.e2e-spec.ts` (incl. 10-way race), `wallet.spec.ts`, `schema.e2e-spec.ts` | ☑ |
-| FR-1 balances + USD total | E2 · `GetWalletQuery` | | ☐ |
+| FR-1 balances + USD total | E2 · `GetWalletHandler` + `RateTable.valueInUsd` | `wallets-get.e2e-spec.ts` (LIVE + provider down), `get-wallet.handler.spec.ts`, `rate-table.spec.ts` | ☑ |
 | FR-2 deposit + tx record | E3 · `DepositHandler`, `DrizzleLedgerRepository` | `deposits.e2e-spec.ts` (+ ledger invariants), `deposit.spec.ts` | ☑ |
 | FR-3 swap via FX | E4 · `SwapHandler` | | ☐ |
 | FR-3 live FX + fallback | `FxRatesService` (cache → `ErApiFxProvider` → stored → built-in) | `fx-rates.service.spec.ts`, `er-api-fx.provider.spec.ts`, `fx-rates.e2e-spec.ts` | ☑ |
