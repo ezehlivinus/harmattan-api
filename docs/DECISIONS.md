@@ -29,6 +29,7 @@ Accepted · 2026-10-29
 Context: Need typed SQL, migrations, transactions, `RETURNING`, and SQL expressions for atomic conditional decrements. NestJS now publishes an official `@nestjs/drizzle` (v0.0.2, Sep 2026, peers `@nestjs/core ^11 || ^12`, `drizzle-orm >=0.35`).
 Decision: `drizzle-orm` 0.45.x (stable `latest` tag; skip 1.0 rc) + `drizzle-kit` for SQL migrations + `@nestjs/drizzle` for module wiring. `numeric` columns in string mode.
 Consequences: SQL stays visible and reviewable; the conditional update is a one-liner (`set amount = amount - x where amount >= x returning`). **Fallback:** `@nestjs/drizzle` is very young. If its API is missing something or blocks for more than 30 min, replace it with a 20-line custom provider (`DRIZZLE` token from `drizzle(pool)`) and note it here. The domain never depends on either.
+**Update 2026-10-29:** 0.0.2 verified against Postgres 17 (`forRootAsync` + `ConfigService`, insert `.returning()`, pool closed on shutdown); fallback not needed. Column naming: TS camelCase ↔ SQL snake_case via Drizzle `casing: 'snake_case'`, set in both the runtime client and `drizzle.config.ts`.
 
 ## ADR-004: FX via live provider with layered fallback
 Accepted · 2026-10-29

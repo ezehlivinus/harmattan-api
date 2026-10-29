@@ -42,9 +42,14 @@ An item that bites twice gets promoted to a project convention and marked `(prom
 - 2026-10-29 · Scaffold pins `vitest ^4.1.2`, `@vitest/coverage-v8 ^4`, `typescript ^6.0.2`, deps `^12.0.1`. Bumped to vitest/coverage `5.0.5` (exact, coverage peers `vitest: 5.0.5`), `typescript ~6.0.3`, nest `^12.3.2`. Vitest 5 needs `vite ^6.4 || ^7 || ^8` (scaffold has vite 8 for `resolve.tsconfigPaths`). Unit + e2e sample green on Vitest 5 with no config change · `npm view vitest@5.0.5 peerDependencies`
 
 ## Drizzle / @nestjs/drizzle
--
+- 2026-10-29 · `@nestjs/drizzle` 0.0.2 (README only links to docs.nestjs.com/data/drizzle; the `.d.ts` is the reference): `DrizzleModule.forRootAsync({ inject: [ConfigService], useFactory: c => ({ drizzle, connection: url, schema, casing }) })`; the module calls `drizzle()` itself, registers globally, injects with `@InjectDrizzle()` (token `getDrizzleToken()` = `'default'`). It closes `db.$client` on shutdown (`autoCloseConnection` default true) and attaches an `error` listener so a dropped idle pg connection doesn't crash the process. Passing both `db` and `drizzle` throws · `node_modules/@nestjs/drizzle/dist/{drizzle-core.module.js,interfaces/drizzle-options.interface.d.ts}`
+- 2026-10-29 · Factory options are typed against `DrizzleConfig`: a `casing` constant widened to `string` fails typecheck; declare it `as const` · tsc error
+- 2026-10-29 · Verified on Postgres 17: drizzle-kit 0.31 resolves ESM `.js` specifiers between schema files; `casing: 'snake_case'` turns `displayName` into `display_name`; `numeric({ precision: 38, scale: 6, mode: 'string' })` → `numeric(38, 6)` and returns exact strings (`'1500.250001'`) from `.returning()`; migrations are tracked in `drizzle.__drizzle_migrations`. Empty schema → `No schema changes` but still writes `meta/_journal.json` · temp container run
+- 2026-10-29 · drizzle-kit does **not** load `.env`; `drizzle.config.ts` calls `process.loadEnvFile()` (Node ≥ 20.12, throws if no file) · drizzle-kit run
+- 2026-10-29 · node-postgres `Pool` connects lazily, so the app boots and non-DB e2e tests pass with an unreachable `DATABASE_URL` · e2e run
 
 ## Validation / Swagger
+- 2026-10-29 · Zod 4 `z.url({ protocol: /^postgres(ql)?$/ })`: the regex is matched **without** the trailing colon (`/^postgres:$/` rejects everything) · node probe
 - 2026-10-29 · `@nestjs/config` 12 takes a Standard Schema directly: `ConfigModule.forRoot({ validationSchema: zodSchema })`; no custom `validate()` glue. The parsed output (coerced numbers, defaults) becomes the validated config; undeclared env vars are merged back in. All issues are reported in one boot error: `Config validation error: NODE_ENV: … \n PORT: …`. `forRoot` is `async` (returns `Promise<DynamicModule>`, fine in `imports`). Typed read: `app.get<ConfigService<Env, true>>(ConfigService).get('PORT', { infer: true })` → `number` · `node_modules/@nestjs/config/dist/{config.module.js,utils/validate-with-schema.util.js}`, boot test
 
 ## Testing (Vitest / Supertest / Testcontainers)
