@@ -17,7 +17,17 @@ docker compose up --build
 # API:     http://localhost:3000/v1
 # Swagger: http://localhost:3000/docs   (spec committed as openapi.json)
 ```
-Migrations and seed data run automatically on startup.
+Migrations and seed data run automatically on startup. Ports can be changed with `API_PORT` and
+`DB_PORT` (defaults 3000 and 5432), e.g. `API_PORT=8080 docker compose up --build`.
+
+### Local development
+```bash
+corepack enable && yarn install
+cp .env.example .env
+docker compose up -d db          # Postgres only
+yarn db:migrate
+yarn start:dev
+```
 
 ## Running tests
 ```bash
