@@ -295,6 +295,149 @@
         "summary": "Create a wallet",
         "tags": ["wallets"]
       }
+    },
+    "/v1/wallets/{walletId}/deposits": {
+      "post": {
+        "description": "Credits the wallet immediately and records a DEPOSIT transaction. Repeating a request with the same Idempotency-Key and body returns the original response without moving money again.",
+        "operationId": "DepositsController_deposit",
+        "parameters": [
+          {
+            "name": "walletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique per wallet and request; 1-255 visible ASCII characters, e.g. a UUID.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "6f1c2a9e-3b7d-4e8f-9a0b-1c2d3e4f5a6b"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DepositRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Deposited (or the replayed original response).",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this is the stored response of an earlier identical request",
+                "schema": {
+                  "type": "string",
+                  "enum": ["true"]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DepositResult"
+                },
+                "example": {
+                  "transaction": {
+                    "id": "019a3b5d-0a1b-7c2d-8e3f-4a5b6c7d8e9f",
+                    "type": "DEPOSIT",
+                    "sourceWalletId": null,
+                    "destinationWalletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b",
+                    "sourceAmount": "1500.250000",
+                    "sourceCurrency": "cNGN",
+                    "destinationAmount": "1500.250000",
+                    "destinationCurrency": "cNGN",
+                    "rate": "1.000000000000000000",
+                    "rateSource": null,
+                    "rateFetchedAt": null,
+                    "createdAt": "2026-10-29T12:00:00.000Z"
+                  },
+                  "balance": {
+                    "currency": "cNGN",
+                    "amount": "1500.250000"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing Idempotency-Key, invalid wallet id, currency or amount.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "message": "Request validation failed",
+                    "details": {
+                      "issues": [
+                        {
+                          "path": "amount",
+                          "message": "Invalid input: expected string, received number"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No wallet with this id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "WALLET_NOT_FOUND",
+                    "message": "Wallet not found",
+                    "details": {
+                      "walletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Amount above the per-request limit, or the key was used with a different body.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "IDEMPOTENCY_KEY_REUSED",
+                    "message": "This Idempotency-Key was already used with a different request",
+                    "details": {
+                      "key": "6f1c2a9e-3b7d-4e8f-9a0b-1c2d3e4f5a6b"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Deposit (simulated)",
+        "tags": ["payments"]
+      }
     }
   },
   "info": {
@@ -395,6 +538,133 @@
           }
         },
         "required": ["error"],
+        "additionalProperties": false
+      },
+      "DepositRequest": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+            "description": "Supported stablecoin",
+            "example": "cNGN"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Positive decimal string, at most 6 decimal places. JSON numbers are rejected.",
+            "example": "1500.25"
+          }
+        },
+        "required": ["currency", "amount"]
+      },
+      "DepositResult": {
+        "type": "object",
+        "properties": {
+          "transaction": {
+            "$ref": "#/components/schemas/Transaction"
+          },
+          "balance": {
+            "type": "object",
+            "properties": {
+              "currency": {
+                "type": "string",
+                "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+                "description": "Supported stablecoin",
+                "example": "cNGN"
+              },
+              "amount": {
+                "type": "string",
+                "example": "1500.250000"
+              }
+            },
+            "required": ["currency", "amount"],
+            "additionalProperties": false,
+            "description": "The wallet's balance in this currency after the deposit"
+          }
+        },
+        "required": ["transaction", "balance"],
+        "additionalProperties": false
+      },
+      "Transaction": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["DEPOSIT", "SWAP", "TRANSFER"]
+          },
+          "sourceWalletId": {
+            "nullable": true,
+            "description": "Null for deposits",
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "destinationWalletId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "sourceAmount": {
+            "type": "string",
+            "example": "1500.250000"
+          },
+          "sourceCurrency": {
+            "type": "string",
+            "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+            "description": "Supported stablecoin",
+            "example": "cNGN"
+          },
+          "destinationAmount": {
+            "type": "string",
+            "example": "1500.250000"
+          },
+          "destinationCurrency": {
+            "type": "string",
+            "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+            "description": "Supported stablecoin",
+            "example": "cNGN"
+          },
+          "rate": {
+            "type": "string",
+            "description": "Units of destination per unit of source (18 decimals); 1 when currencies match",
+            "example": "1.000000000000000000"
+          },
+          "rateSource": {
+            "nullable": true,
+            "type": "string",
+            "enum": ["LIVE", "CACHED", "FALLBACK"]
+          },
+          "rateFetchedAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "sourceWalletId",
+          "destinationWalletId",
+          "sourceAmount",
+          "sourceCurrency",
+          "destinationAmount",
+          "destinationCurrency",
+          "rate",
+          "rateSource",
+          "rateFetchedAt",
+          "createdAt"
+        ],
         "additionalProperties": false
       }
     }
