@@ -7,12 +7,14 @@ import { WalletsModule } from './modules/wallets/wallets.module.js';
 import { AppConfigModule } from './shared/infrastructure/config/config.module.js';
 import { DatabaseModule } from './shared/infrastructure/database/database.module.js';
 import { HealthModule } from './shared/infrastructure/health/health.module.js';
+import { ApiHttpModule } from './shared/infrastructure/http/http.module.js';
 
 @Module({
   imports: [
     AppConfigModule,
     DatabaseModule,
     CqrsModule.forRoot(),
+    ApiHttpModule,
     HealthModule,
     WalletsModule,
     FxModule,
