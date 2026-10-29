@@ -21,6 +21,8 @@ export default defineConfig({
           // One Postgres container per run (Testcontainers), migrated before any test.
           globalSetup: ['test/helpers/global-setup.ts'],
           setupFiles: ['test/helpers/e2e-env.ts'],
+          // Files share one database and truncate it between tests, so they must not overlap.
+          fileParallelism: false,
           hookTimeout: 120_000,
           testTimeout: 30_000,
         },
