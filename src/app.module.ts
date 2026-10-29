@@ -7,10 +7,12 @@ import { PaymentsModule } from './modules/payments/payments.module.js';
 import { TransactionsModule } from './modules/transactions/transactions.module.js';
 import { WalletsModule } from './modules/wallets/wallets.module.js';
 import { AppConfigModule } from './shared/infrastructure/config/config.module.js';
+import { DatabaseModule } from './shared/infrastructure/database/database.module.js';
 
 @Module({
   imports: [
     AppConfigModule,
+    DatabaseModule,
     CqrsModule.forRoot(),
     WalletsModule,
     FxModule,
