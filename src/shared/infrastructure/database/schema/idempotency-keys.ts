@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, integer, jsonb, pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
+import { check, integer, json, pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
 import { timestampMs } from './columns.js';
 
 /**
@@ -15,7 +15,8 @@ export const idempotencyKeys = pgTable(
     /** SHA-256 (hex) of the canonical request body; a different body with the same key is a 422. */
     requestHash: text().notNull(),
     responseStatus: integer().notNull(),
-    responseBody: jsonb().$type<unknown>().notNull(),
+    /** `json`, not `jsonb`: keeps the original key order, so a replay is byte-identical. */
+    responseBody: json().$type<unknown>().notNull(),
     createdAt: timestampMs().notNull().defaultNow(),
   },
   (t) => [
