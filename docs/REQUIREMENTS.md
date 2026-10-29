@@ -102,11 +102,11 @@ Supported stablecoins: **cNGN, cGHS, cXAF, USDx, EURx**.
 |---|---|---|---|
 | FR-1 create wallet, email/phone, unique | E1 · `CreateWalletHandler`, unique indexes + CHECKs | `wallets-create.e2e-spec.ts` (incl. 10-way race), `wallet.spec.ts`, `schema.e2e-spec.ts` | ☑ |
 | FR-1 balances + USD total | E2 · `GetWalletQuery` | | ☐ |
-| FR-2 deposit + tx record | E3 · `DepositHandler` | | ☐ |
+| FR-2 deposit + tx record | E3 · `DepositHandler`, `DrizzleLedgerRepository` | `deposits.e2e-spec.ts` (+ ledger invariants), `deposit.spec.ts` | ☑ |
 | FR-3 swap via FX | E4 · `SwapHandler` | | ☐ |
 | FR-3 live FX + fallback | `FxRatesPort` impl | | ☐ |
 | FR-3 no negative balance | conditional update + CHECK | concurrency e2e | ☐ |
-| FR-3 no double processing | idempotency in tx | parallel-duplicate e2e | ☐ |
+| FR-3 no double processing | `IdempotencyService` (key row in the movement's tx) | `deposits.e2e-spec.ts` 10 parallel identical, `idempotency.service.spec.ts`; swaps pending | ◐ |
 | FR-4 transfer same/cross ccy | E5 · `TransferHandler` | | ☐ |
 | FR-4 recorded fields | `transactions` columns + shape/rate CHECKs | `schema.e2e-spec.ts` (columns); transfer e2e pending | ◐ |
 | FR-5 history newest-first, paged, filtered | E6 | | ☐ |

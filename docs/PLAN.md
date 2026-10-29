@@ -34,10 +34,10 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 
 ## Phase 2: Wallets + Deposits + Idempotency (FR-1, FR-2)
 - [x] `CreateWalletCommand` (normalize email/E.164; 409 duplicate; 5 zero balances) → E1 (`Clock` port added; repository ports in `application/ports/`)
-- [ ] `GetWalletQuery` (balances + `totalUsd` + `ratesAsOf`) → E2
-- [ ] Idempotency: interceptor (header, hash) + store inside UoW + replay + 422 on reuse
-- [ ] `DepositCommand` → E3
-- [ ] e2e: ~~wallet duplicate (email, phone formats)~~ (done with E1), deposit happy path, invalid amounts, replay, key reuse
+- [ ] `GetWalletQuery` (balances + `totalUsd` + `ratesAsOf`) → E2 (moved after Phase 3: needs FX rates)
+- [x] Idempotency: `@IdempotencyKey()` header decorator + `IdempotencyService` (canonical SHA-256, store inside UoW, replay with `Idempotent-Replayed`, 422 on reuse, concurrent loser replays the winner)
+- [x] `DepositCommand` → E3 (ledger: wallet +X / EXTERNAL_SETTLEMENT −X; 1e12 per-request cap)
+- [x] e2e: wallet duplicate (email, phone formats), deposit happy path, invalid amounts, replay, key reuse
 
 ## Phase 3: FX (FR-3, FR-5), parallel track `@B`
 - [ ] Verify `open.er-api.com` response shape → LEARNINGS
@@ -54,8 +54,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [ ] e2e: happy paths + error cases + exact cross-currency math
 - [ ] **Concurrency:** 50 parallel debits vs balance covering 10 → exactly 10 succeed, balance 0
 - [ ] **Concurrency:** A→B and B→A in parallel → no deadlock, totals conserved
-- [ ] **Idempotency:** 10 parallel identical requests, same key → 1 movement, identical responses
-- [ ] Ledger invariant helper runs after every money e2e: Σ ledger per (wallet, currency) == balance, and Σ per (transaction, currency) == 0
+- [x] **Idempotency:** 10 parallel identical requests, same key → 1 movement, identical responses (deposits; repeat for swaps/transfers)
+- [x] Ledger invariant helper runs after every money e2e: Σ ledger per (wallet, currency) == balance, and Σ per (transaction, currency) == 0 (`test/helpers/ledger.ts`, used from the deposit e2e on)
 
 ## Phase 5: History (FR-5)
 - [ ] `ListWalletTransactionsQuery` → E6 (newest first, cursor, `type`, `currency`, IN/OUT direction)

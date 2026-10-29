@@ -42,6 +42,7 @@ Accepted · 2026-10-29
 Context: "Never process the same request twice", including concurrent duplicates.
 Decision: Required `Idempotency-Key`. `(key, scope)` unique row with `requestHash` and stored response, inserted in the same tx as the movement. A concurrent duplicate blocks on the unique index, then gets a violation and replays the stored response. Hash mismatch → 422.
 Consequences: Exactly-once effect with no Redis or locks. Business failures roll back, so the key is not stored and a retry re-evaluates (documented). Keys kept indefinitely in the sandbox.
+**Update 2026-10-29:** implemented as `IdempotencyService.execute({ scope, key, payload }, status, work)`. Scope is the operation plus its target (`deposit:<walletId>`), so the same key may be used on two wallets. The hash covers the *normalized* payload (`"100"` and `"100.0"` are the same request). Lookup first (replay or 422); otherwise the work and the key row commit together; a concurrent loser gets the primary-key violation, its whole transaction rolls back, and it replays the winner. The stored body is `json`, not `jsonb`, because `jsonb` reorders object keys and replays must be byte-identical. Key format: 1-255 visible ASCII characters.
 
 ## ADR-006: Validation via Zod 4 / Standard Schema
 Accepted · 2026-10-29
