@@ -1,3 +1,4 @@
+import { Money } from '../../../shared/domain/money.js';
 import { RateTable } from './rate-table.js';
 
 const units = { USDx: '1', cNGN: '1600', cGHS: '12.5', cXAF: '600', EURx: '0.9' } as const;
@@ -35,5 +36,20 @@ describe('RateTable', () => {
     ['not a number', { ...units, cGHS: 'abc' }],
   ])('rejects a %s units-per-USD value', (_name, bad) => {
     expect(() => RateTable.create(bad, 'LIVE', AT)).toThrow(/units per USD/);
+  });
+
+  describe('valueInUsd: amount ÷ units per USD, rounded down once', () => {
+    it('values exactly, avoiding the truncated cross rate (9 EURx is 10 USD, not 9.999999)', () => {
+      expect(table.valueInUsd(Money.of('9', 'EURx')).toString()).toBe('10.000000');
+    });
+
+    it('rounds down', () => {
+      expect(table.valueInUsd(Money.of('1000', 'cXAF')).toString()).toBe('1.666666');
+    });
+
+    it('returns USDx as is, and zero as zero', () => {
+      expect(table.valueInUsd(Money.of('1.5', 'USDx')).toString()).toBe('1.500000');
+      expect(table.valueInUsd(Money.zero('cGHS')).isZero()).toBe(true);
+    });
   });
 });

@@ -1,5 +1,6 @@
-import { CURRENCIES, type Currency } from '../../../shared/domain/currency.js';
+import { CURRENCIES, CURRENCY_SCALE, type Currency } from '../../../shared/domain/currency.js';
 import { Dec, type Decimal, ROUND_DOWN } from '../../../shared/domain/decimal.js';
+import { Money } from '../../../shared/domain/money.js';
 
 /** Where a rate came from (ADR-004). */
 export type RateSource = 'LIVE' | 'CACHED' | 'FALLBACK';
@@ -42,6 +43,17 @@ export class RateTable {
       return new Dec(1).toFixed(RATE_SCALE);
     }
     return this.unitsPerUsd(to).div(this.unitsPerUsd(from)).toFixed(RATE_SCALE, ROUND_DOWN);
+  }
+
+  /**
+   * USD value of `money` for display: `amount ÷ unitsPerUsd`, rounded down once. Exact division
+   * rather than the truncated cross rate, so 9 EURx at 0.9 per USD is 10, not 9.999999.
+   */
+  valueInUsd(money: Money): Money {
+    const usd = new Dec(money.toString())
+      .div(this.unitsPerUsd(money.currency))
+      .toFixed(CURRENCY_SCALE, ROUND_DOWN);
+    return Money.of(usd, 'USDx');
   }
 
   withSource(source: RateSource): RateTable {
