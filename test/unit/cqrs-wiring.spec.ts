@@ -20,8 +20,8 @@ class PingCommand extends Command<{ pong: string }> {
 
 @CommandHandler(PingCommand)
 class PingHandler implements ICommandHandler<PingCommand> {
-  execute(command: PingCommand): Promise<{ pong: string }> {
-    return Promise.resolve({ pong: command.value });
+  async execute(command: PingCommand): Promise<{ pong: string }> {
+    return await Promise.resolve({ pong: command.value });
   }
 }
 
@@ -29,8 +29,8 @@ class CountQuery extends Query<number> {}
 
 @QueryHandler(CountQuery)
 class CountHandler implements IQueryHandler<CountQuery> {
-  execute(): Promise<number> {
-    return Promise.resolve(42);
+  async execute(): Promise<number> {
+    return await Promise.resolve(42);
   }
 }
 

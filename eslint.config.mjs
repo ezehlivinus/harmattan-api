@@ -28,6 +28,10 @@ export default defineConfig(
         'error',
         { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
       ],
+      // Every promise is awaited explicitly: functions returning a promise are `async`,
+      // and returned promises are `return await`ed (complete stack traces, correct try/catch).
+      '@typescript-eslint/promise-function-async': 'error',
+      '@typescript-eslint/return-await': ['error', 'always'],
       // `import type` on constructor-injected classes breaks Nest DI (emitDecoratorMetadata).
       '@typescript-eslint/consistent-type-imports': 'off',
     },
