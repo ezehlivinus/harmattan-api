@@ -5,6 +5,8 @@ import type { Env } from './shared/infrastructure/config/env.schema.js';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  // Handle SIGTERM/SIGINT (container stop): close the HTTP server and the DB pool.
+  app.enableShutdownHooks();
   const config = app.get<ConfigService<Env, true>>(ConfigService);
   await app.listen(config.get('PORT', { infer: true }));
 }
