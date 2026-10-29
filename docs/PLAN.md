@@ -49,13 +49,13 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] Decide on Redis + BullMQ FX refresher (ADR-011): no; accepted 2026-10-30
 
 ## Phase 4: Swaps + Transfers (FR-3, FR-4)
-- [ ] `SwapCommand` → E4 (same-currency 422, insufficient funds 422)
+- [x] `SwapCommand` → E4 (same-currency 422, insufficient funds 422, too-small 422; rate fetched before the DB tx; one `applyBalanceChanges` path for every balance mutation)
 - [ ] `TransferCommand` → E5 (cross-ccy, self-transfer 422, unknown wallet 404, lock order)
 - [ ] Transaction stores sender, receiver, src amt/ccy, dst amt/ccy, rate, rate source, fetchedAt, createdAt
 - [ ] e2e: happy paths + error cases + exact cross-currency math
-- [ ] **Concurrency:** 50 parallel debits vs balance covering 10 → exactly 10 succeed, balance 0
+- [x] **Concurrency:** 50 parallel debits vs balance covering 10 → exactly 10 succeed, balance 0 (swaps; plus opposite swaps on one wallet, no deadlock)
 - [ ] **Concurrency:** A→B and B→A in parallel → no deadlock, totals conserved
-- [x] **Idempotency:** 10 parallel identical requests, same key → 1 movement, identical responses (deposits; repeat for swaps/transfers)
+- [x] **Idempotency:** 10 parallel identical requests, same key → 1 movement, identical responses (deposits; swaps replay tested; repeat for transfers)
 - [x] Ledger invariant helper runs after every money e2e: Σ ledger per (wallet, currency) == balance, and Σ per (transaction, currency) == 0 (`test/helpers/ledger.ts`, used from the deposit e2e on)
 
 ## Phase 5: History (FR-5)
