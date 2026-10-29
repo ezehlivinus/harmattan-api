@@ -1,11 +1,6 @@
-// Named import: the default import types as the CJS module object under nodenext.
-import { Decimal } from 'decimal.js';
 import { CURRENCY_SCALE, type Currency } from './currency.js';
+import { Dec, type Decimal, ROUND_DOWN } from './decimal.js';
 import { CurrencyMismatchError, InvalidAmountError } from './errors.js';
-
-// Private Decimal constructor: never touches decimal.js global config. 100 significant
-// digits covers numeric(38,6) × numeric(38,18) exactly; ROUND_DOWN is the only rounding.
-const Dec = Decimal.clone({ precision: 100, rounding: Decimal.ROUND_DOWN });
 
 /** Plain decimal, no sign, no exponent, no leading zeros, at most 6 decimals. */
 const AMOUNT_PATTERN = /^(0|[1-9]\d*)(\.\d{1,6})?$/;
@@ -86,9 +81,7 @@ export class Money {
     if (rateValue.isZero() || rateValue.greaterThan(MAX_RATE)) {
       throw new InvalidAmountError('Rate must be greater than zero and within range', { rate });
     }
-    const converted = this.value
-      .times(rateValue)
-      .toDecimalPlaces(CURRENCY_SCALE, Decimal.ROUND_DOWN);
+    const converted = this.value.times(rateValue).toDecimalPlaces(CURRENCY_SCALE, ROUND_DOWN);
     return Money.checked(converted, to);
   }
 
@@ -112,7 +105,7 @@ export class Money {
 
   /** Fixed 6 decimal places, e.g. `"1500.250000"`; same text as Postgres numeric(38,6). */
   toString(): string {
-    return this.value.toFixed(CURRENCY_SCALE, Decimal.ROUND_DOWN);
+    return this.value.toFixed(CURRENCY_SCALE, ROUND_DOWN);
   }
 
   toJSON(): string {
