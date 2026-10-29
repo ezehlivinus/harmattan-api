@@ -15,8 +15,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] Replace oxlint → ESLint flat config + Prettier; `lint`, `format`, `typecheck` scripts (+ lint rule: `domain/` may not import Nest/Drizzle/HTTP or outer layers)
 - [x] husky + commitlint (`@commitlint/config-conventional`, case-insensitive `no-co-author-trailer` local rule, `scope-enum`)
 - [x] Clean-arch folder skeleton (`shared/`, `modules/*/{domain,application,infrastructure,presentation}`), `CqrsModule` (`.gitkeep` placeholders: delete each as real files land)
-- [ ] `@nestjs/config` with Zod-validated env
-- [ ] `@nestjs/drizzle` module + `drizzle.config.ts`; `db:generate` / `db:migrate` scripts (fallback per ADR-003)
+- [x] `@nestjs/config` with Zod-validated env (`NODE_ENV`, `PORT`; `.env.example`)
+- [ ] `@nestjs/drizzle` module + `drizzle.config.ts` (add `DATABASE_URL` to `envSchema` + `.env.example`); `db:generate` / `db:migrate` scripts (fallback per ADR-003)
 - [ ] Dockerfile (multi-stage) + `docker-compose.yml` (api, postgres + healthcheck); entrypoint: migrate → seed → start; root `postinstall: husky` must not break the image (husky is a devDep, no `.git`): use `HUSKY=0` and/or install prod deps without running scripts
 - [ ] Vitest (unit + e2e projects) + Supertest + Testcontainers; e2e `GET /health` green
 - [ ] Swagger at `/docs`; `yarn openapi` writes `openapi.json`

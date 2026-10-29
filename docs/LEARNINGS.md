@@ -45,9 +45,10 @@ An item that bites twice gets promoted to a project convention and marked `(prom
 -
 
 ## Validation / Swagger
--
+- 2026-10-29 · `@nestjs/config` 12 takes a Standard Schema directly: `ConfigModule.forRoot({ validationSchema: zodSchema })`; no custom `validate()` glue. The parsed output (coerced numbers, defaults) becomes the validated config; undeclared env vars are merged back in. All issues are reported in one boot error: `Config validation error: NODE_ENV: … \n PORT: …`. `forRoot` is `async` (returns `Promise<DynamicModule>`, fine in `imports`). Typed read: `app.get<ConfigService<Env, true>>(ConfigService).get('PORT', { infer: true })` → `number` · `node_modules/@nestjs/config/dist/{config.module.js,utils/validate-with-schema.util.js}`, boot test
 
 ## Testing (Vitest / Supertest / Testcontainers)
+- 2026-10-29 · Vitest sets `NODE_ENV=test` when unset, so `envSchema` must accept `test`; removing it makes every e2e boot fail with `Config validation error: NODE_ENV` · local run
 - 2026-10-29 · Scaffold has two configs: `vitest.config.ts` (`**/*.spec.ts`, globals) and `vitest.config.e2e.ts` (`**/*.e2e-spec.ts`); `.spec.ts` glob does not catch `.e2e-spec.ts`. Decorator metadata works out of the box (no SWC plugin needed for the sample) · local run
 
 ## Docker / Yarn / tooling
