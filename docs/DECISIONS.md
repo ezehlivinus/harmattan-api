@@ -34,8 +34,9 @@ Consequences: SQL stays visible and reviewable; the conditional update is a one-
 ## ADR-004: FX via live provider with layered fallback
 Accepted · 2026-10-29
 Context: Brief prefers live rates with fallback when the provider fails.
-Decision: `open.er-api.com` USD base (no key; NGN/GHS/XAF/EUR), verify shape. Chain: memory (TTL 60s) → live (2s timeout) → last-good `fx_rates` (`CACHED`) → seeded table (`FALLBACK`). Units-per-USD stored; cross rate derived at 18 dp. 1 stablecoin = 1 unit of its fiat.
+Decision: `open.er-api.com` USD base (no key; NGN/GHS/XAF/EUR), verify shape. Chain: memory (TTL 1 h, see update) → live (2s timeout) → last-good `fx_rates` (`CACHED`) → seeded table (`FALLBACK`). Units-per-USD stored; cross rate derived at 18 dp. 1 stablecoin = 1 unit of its fiat.
 Consequences: The API keeps working when the provider is down; each rate exposes `source` and `fetchedAt`. Seed values can drift from market (documented limitation).
+**Update 2026-10-29:** the in-memory cache TTL is **1 hour** (or until the provider's `time_next_update_unix`, whichever is sooner), not 60 s. The provider refreshes once every 24 h and rate-limits clients calling more than about hourly (HTTP 429 for about 20 minutes), so 60 s would push the app onto the fallback chain. "Last refreshed" per rate is the provider's `time_last_update_unix`. Rates are parsed from the exact JSON source text (never via floats), errors are detected by `result !== "success"` (the provider answers errors with HTTP 200), and the README and rates endpoint credit "Rates By Exchange Rate API" as the terms require.
 
 ## ADR-005: Idempotency inside the money transaction
 Accepted · 2026-10-29

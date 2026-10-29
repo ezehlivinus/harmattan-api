@@ -40,8 +40,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] e2e: wallet duplicate (email, phone formats), deposit happy path, invalid amounts, replay, key reuse
 
 ## Phase 3: FX (FR-3, FR-5), parallel track `@B`
-- [ ] Verify `open.er-api.com` response shape → LEARNINGS
-- [ ] `FxRatesPort` + `ErApiFxProvider` (2s timeout) + cache + fallback chain + persist last-good
+- [x] Verify `open.er-api.com` response shape → LEARNINGS (numbers not strings → parse via `context.source`; errors are HTTP 200 + `result: "error"`; 429 when rate limited; daily data; attribution required)
+- [x] Decide cache TTL vs provider terms: 1 h, or until the provider's next update if sooner (ADR-004 update)
+- [ ] `FxRatesPort` + `ErApiFxProvider` (2s timeout, parse rates from JSON source text, `result` check, 429 handling) + cache (1 h) + fallback chain + persist last-good
 - [ ] Seed fallback table; add the idempotent seed step to the container start (`migrate.js && seed.js && main.js`)
 - [ ] `GetRatesQuery` → E8 (5×5 matrix, `source`, `fetchedAt`)
 - [ ] Unit: provider down, timeout, malformed body, stale cache, cross-rate math
