@@ -37,7 +37,8 @@ An item that bites twice gets promoted to a project convention and marked `(prom
 - 2026-10-29 · Engines: vitest 5 needs Node `^22.12 || ^24 || >=26`; `@nestjs/core` `>=20`. Node 24.18.0 OK · `npm view <pkg> engines`
 
 ## NestJS 12 / CQRS
--
+- 2026-10-29 · CLI 12.0.11 scaffold: `"type": "module"`, `module/moduleResolution: nodenext`, relative imports with `.js`, top-level `await bootstrap()`, `experimentalDecorators` + `emitDecoratorMetadata`, `strictPropertyInitialization: false`. Also emits `AGENTS.md` (Nest Observe ad) and a `deploy` script + `@nestjs/mau`: dropped all three. Flag `--no-observe` skips the observability prompt · scaffold output
+- 2026-10-29 · Scaffold pins `vitest ^4.1.2`, `@vitest/coverage-v8 ^4`, `typescript ^6.0.2`, deps `^12.0.1`. Bumped to vitest/coverage `5.0.5` (exact, coverage peers `vitest: 5.0.5`), `typescript ~6.0.3`, nest `^12.3.2`. Vitest 5 needs `vite ^6.4 || ^7 || ^8` (scaffold has vite 8 for `resolve.tsconfigPaths`). Unit + e2e sample green on Vitest 5 with no config change · `npm view vitest@5.0.5 peerDependencies`
 
 ## Drizzle / @nestjs/drizzle
 -
@@ -46,10 +47,13 @@ An item that bites twice gets promoted to a project convention and marked `(prom
 -
 
 ## Testing (Vitest / Supertest / Testcontainers)
--
+- 2026-10-29 · Scaffold has two configs: `vitest.config.ts` (`**/*.spec.ts`, globals) and `vitest.config.e2e.ts` (`**/*.e2e-spec.ts`); `.spec.ts` glob does not catch `.e2e-spec.ts`. Decorator metadata works out of the box (no SWC plugin needed for the sample) · local run
 
 ## Docker / Yarn / tooling
-- 2026-10-29 · Global `yarn` on the dev machine is classic 1.22.22; run `corepack enable` (corepack 0.35.0 ships with Node 24) so the `packageManager` field selects Yarn 4.18.1 · `yarn -v`, `corepack --version`
+- 2026-10-29 · `yarn -v` printed 1.22.22, but `yarn` was already the corepack shim; that is just corepack's fallback when no `packageManager` field exists. With `"packageManager": "yarn@4.18.1"` it runs Yarn 4 (set `COREPACK_ENABLE_DOWNLOAD_PROMPT=0` in non-interactive shells) · `ls -l $(dirname $(which node))`
+- 2026-10-29 · Yarn 4 refuses to install if a parent directory holds a `package.json` ("doesn't seem to be part of the project declared in …"). An empty `yarn.lock` in the repo root marks it as a separate project · yarn error text
+- 2026-10-29 · `nest new . ` style scaffolding (`--directory .`) aborts on existing files ("A merge conflicted on path /README.md"), even with `--dry-run`. Scaffold into a temp dir and copy files in · nest CLI 12.0.11
+- 2026-10-29 · `nest new --skip-git` writes **no** `.gitignore`; the template lives in `@nestjs/cli/lib/configuration/defaults.js` (`defaultGitIgnore`), written only during git init · CLI source
 
 ## Money storage
 - 2026-10-29 · Exact `NUMERIC` and integer minor units (`BIGINT`) are both standard; floats and Postgres `money` (locale-dependent) are not. Integer math is faster, irrelevant at sandbox volume. Chose `NUMERIC(38,6)` (ADR-007) · crunchydata.com/developers/playground/working-with-money-in-postgres, medium.com/xendit-engineering/benchmarking-pg-numeric-integer-9c593d7af67e
