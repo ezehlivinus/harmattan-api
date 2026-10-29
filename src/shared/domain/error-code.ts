@@ -13,6 +13,7 @@ export const ErrorCode = {
   INSUFFICIENT_FUNDS: 'INSUFFICIENT_FUNDS',
   SAME_CURRENCY: 'SAME_CURRENCY',
   AMOUNT_TOO_SMALL: 'AMOUNT_TOO_SMALL',
+  SELF_TRANSFER: 'SELF_TRANSFER',
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

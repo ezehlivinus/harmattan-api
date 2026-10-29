@@ -58,3 +58,24 @@ export const swapResponse = z
       .meta({ description: 'Balances after the swap: source currency, then destination currency' }),
   })
   .meta({ id: 'SwapResult' });
+
+export const transferBody = z
+  .object({
+    fromWalletId: z.uuid(),
+    toWalletId: z.uuid(),
+    sourceCurrency: currencyCode,
+    destinationCurrency: currencyCode,
+    amount: decimalAmount.meta({ description: 'Amount of sourceCurrency debited from the sender' }),
+  })
+  .meta({ id: 'TransferRequest' });
+
+export type TransferBody = z.infer<typeof transferBody>;
+
+export const transferResponse = z
+  .object({
+    transaction: transactionResponse,
+    senderBalance: z.object({ currency: currencyCode, amount }).meta({
+      description: "The sender's balance in sourceCurrency after the transfer",
+    }),
+  })
+  .meta({ id: 'TransferResult' });

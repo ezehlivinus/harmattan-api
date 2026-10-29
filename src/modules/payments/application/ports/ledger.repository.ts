@@ -24,6 +24,8 @@ export interface LedgerRepository {
    * (or `WalletNotFoundError` when the wallet does not exist).
    */
   applyBalanceChanges(changes: BalanceChange[], tx: TransactionContext): Promise<Money[]>;
+  /** The first id (in the order given) with no wallet, if any. */
+  findMissingWallet(walletIds: string[], tx: TransactionContext): Promise<string | undefined>;
   /** Stores the transaction row and its postings (which must sum to zero per currency). */
   record(
     transaction: NewTransaction,

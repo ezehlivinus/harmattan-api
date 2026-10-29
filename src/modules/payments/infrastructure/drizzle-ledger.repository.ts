@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq, gte, sql } from 'drizzle-orm';
+import { and, eq, gte, inArray, sql } from 'drizzle-orm';
 import type { TransactionContext } from '../../../shared/application/unit-of-work.js';
 import { WalletNotFoundError } from '../../../shared/domain/errors.js';
 import { newId } from '../../../shared/domain/id.js';
@@ -10,6 +10,7 @@ import {
   balances,
   ledgerEntries,
   transactions,
+  wallets,
 } from '../../../shared/infrastructure/database/schema/index.js';
 import type { LedgerRepository, NewTransaction } from '../application/ports/ledger.repository.js';
 import type { TransactionView } from '../application/transaction.view.js';
@@ -37,6 +38,18 @@ export class DrizzleLedgerRepository implements LedgerRepository {
           : await this.debit(tx, change.walletId, change.amount);
     }
     return results;
+  }
+
+  async findMissingWallet(
+    walletIds: string[],
+    ctx: TransactionContext,
+  ): Promise<string | undefined> {
+    const rows = await drizzleTx(ctx)
+      .select({ id: wallets.id })
+      .from(wallets)
+      .where(inArray(wallets.id, walletIds));
+    const found = new Set(rows.map((row) => row.id));
+    return walletIds.find((id) => !found.has(id));
   }
 
   private async credit(tx: DatabaseTransaction, walletId: string, amount: Money): Promise<Money> {

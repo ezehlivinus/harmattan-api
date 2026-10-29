@@ -743,6 +743,138 @@
         "summary": "Swap between two currencies of a wallet",
         "tags": ["payments"]
       }
+    },
+    "/v1/transfers": {
+      "post": {
+        "description": "Debits `amount` of sourceCurrency from the sender and credits the receiver in destinationCurrency: the same amount when the currencies match (rate 1), otherwise roundDown(amount × rate, 6) at the current rate, which is recorded with its source.",
+        "operationId": "TransfersController_transfer",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "description": "Unique per sender and request; 1-255 visible ASCII characters, e.g. a UUID.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Transferred (or the replayed original response).",
+            "headers": {
+              "Idempotent-Replayed": {
+                "description": "`true` when this is the stored response of an earlier identical request",
+                "schema": {
+                  "type": "string",
+                  "enum": ["true"]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransferResult"
+                },
+                "example": {
+                  "transaction": {
+                    "id": "019a3b5d-0a1b-7c2d-8e3f-4a5b6c7d8e9f",
+                    "type": "TRANSFER",
+                    "sourceWalletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b",
+                    "destinationWalletId": "019a3b5c-9f3a-7b21-8c5d-2e3f4a5b6c7d",
+                    "sourceAmount": "10.000000",
+                    "sourceCurrency": "EURx",
+                    "destinationAmount": "138.888888",
+                    "destinationCurrency": "cGHS",
+                    "rate": "13.888888888888888888",
+                    "rateSource": "LIVE",
+                    "rateFetchedAt": "2026-10-29T00:02:31.000Z",
+                    "createdAt": "2026-10-29T12:00:00.000Z"
+                  },
+                  "senderBalance": {
+                    "currency": "EURx",
+                    "amount": "0.000000"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing Idempotency-Key, invalid wallet ids, currencies or amount.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "message": "Request validation failed",
+                    "details": {
+                      "issues": [
+                        {
+                          "path": "toWalletId",
+                          "message": "Invalid UUID"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The sender or the receiver does not exist.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "WALLET_NOT_FOUND",
+                    "message": "Wallet not found",
+                    "details": {
+                      "walletId": "019a3b5c-9f3a-7b21-8c5d-2e3f4a5b6c7d"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "INSUFFICIENT_FUNDS, SELF_TRANSFER, AMOUNT_TOO_SMALL (converts to less than 0.000001) or IDEMPOTENCY_KEY_REUSED.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "SELF_TRANSFER",
+                    "message": "A wallet cannot transfer to itself; use a swap to change currency",
+                    "details": {
+                      "walletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Transfer to another wallet, converting if the currencies differ",
+        "tags": ["payments"]
+      }
     }
   },
   "info": {
@@ -1167,6 +1299,73 @@
           }
         },
         "required": ["transaction", "balances"],
+        "additionalProperties": false
+      },
+      "TransferRequest": {
+        "type": "object",
+        "properties": {
+          "fromWalletId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "toWalletId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "sourceCurrency": {
+            "type": "string",
+            "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+            "description": "Supported stablecoin",
+            "example": "cNGN"
+          },
+          "destinationCurrency": {
+            "type": "string",
+            "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+            "description": "Supported stablecoin",
+            "example": "cNGN"
+          },
+          "amount": {
+            "type": "string",
+            "description": "Amount of sourceCurrency debited from the sender",
+            "example": "1500.25"
+          }
+        },
+        "required": [
+          "fromWalletId",
+          "toWalletId",
+          "sourceCurrency",
+          "destinationCurrency",
+          "amount"
+        ]
+      },
+      "TransferResult": {
+        "type": "object",
+        "properties": {
+          "transaction": {
+            "$ref": "#/components/schemas/Transaction"
+          },
+          "senderBalance": {
+            "type": "object",
+            "properties": {
+              "currency": {
+                "type": "string",
+                "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+                "description": "Supported stablecoin",
+                "example": "cNGN"
+              },
+              "amount": {
+                "type": "string",
+                "example": "1500.250000"
+              }
+            },
+            "required": ["currency", "amount"],
+            "additionalProperties": false,
+            "description": "The sender's balance in sourceCurrency after the transfer"
+          }
+        },
+        "required": ["transaction", "senderBalance"],
         "additionalProperties": false
       }
     }

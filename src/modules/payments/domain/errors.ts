@@ -24,3 +24,11 @@ export class SameCurrencyError extends DomainError {
 export class AmountTooSmallError extends DomainError {
   readonly code = ErrorCode.AMOUNT_TOO_SMALL;
 }
+
+export class SelfTransferError extends DomainError {
+  readonly code = ErrorCode.SELF_TRANSFER;
+
+  constructor(walletId: string) {
+    super('A wallet cannot transfer to itself; use a swap to change currency', { walletId });
+  }
+}
