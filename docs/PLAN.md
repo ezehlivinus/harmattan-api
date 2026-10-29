@@ -8,8 +8,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 ---
 
 ## Phase 0: Foundation (blocks everything)
-- [ ] Re-verify versions (`npm view`) for nest core/cli/cqrs/drizzle/swagger, drizzle-orm/kit, zod, vitest, testcontainers, node image → LEARNINGS
-- [ ] `nest new` (ESM, Yarn); strict TS + `noUncheckedIndexedAccess`
+- [x] Re-verify versions (`npm view`) for nest core/cli/cqrs/drizzle/swagger, drizzle-orm/kit, zod, vitest, testcontainers, node image → LEARNINGS
+- [ ] `nest new` (ESM, Yarn); strict TS + `noUncheckedIndexedAccess`; pin `typescript ~6.0.3` (not 7, see LEARNINGS)
+- [ ] `corepack enable` before `yarn` (global yarn here is 1.22)
 - [ ] Merge the scaffold's `.gitignore` into the existing one (keep both sets of entries, drop duplicates); don't overwrite README/docs
 - [ ] Yarn 4 (`.yarnrc.yml` `nodeLinker: node-modules`, `packageManager` field)
 - [ ] Replace oxlint → ESLint flat config + Prettier; `lint`, `format`, `typecheck` scripts
