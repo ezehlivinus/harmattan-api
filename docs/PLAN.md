@@ -42,10 +42,10 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 ## Phase 3: FX (FR-3, FR-5), parallel track `@B`
 - [x] Verify `open.er-api.com` response shape → LEARNINGS (numbers not strings → parse via `context.source`; errors are HTTP 200 + `result: "error"`; 429 when rate limited; daily data; attribution required)
 - [x] Decide cache TTL vs provider terms: 1 h, or until the provider's next update if sooner (ADR-004 update)
-- [ ] `FxRatesPort` + `ErApiFxProvider` (2s timeout, parse rates from JSON source text, `result` check, 429 handling) + cache (1 h) + fallback chain + persist last-good
-- [ ] Seed fallback table; add the idempotent seed step to the container start (`migrate.js && seed.js && main.js`)
-- [ ] `GetRatesQuery` → E8 (5×5 matrix, `source`, `fetchedAt`)
-- [ ] Unit: provider down, timeout, malformed body, stale cache, cross-rate math
+- [x] `FxRatesPort` + `ErApiFxProvider` (2s timeout, parse rates from JSON source text, `result` check, 429 handling) + cache (1 h) + fallback chain + persist last-good (built-in `fetch`; no cache-manager/axios, see ADR-004)
+- [x] Seed fallback table; add the idempotent seed step to the container start (`migrate.js && seed.js && main.js`)
+- [x] `GetRatesQuery` → E8 (5×5 matrix, `source`, `fetchedAt`, provider attribution)
+- [x] Unit: provider down, timeout, malformed body, stale cache, cross-rate math (+ e2e LIVE → CACHED → FALLBACK with an injected `fetch`)
 - [ ] Decide on Redis + BullMQ FX refresher (ADR-011); confirm before adding dependencies
 
 ## Phase 4: Swaps + Transfers (FR-3, FR-4)

@@ -80,4 +80,10 @@ endpoint (an e2e test fails when it is out of date). Health check: `GET /health`
 
 ## Assumptions
 ## Known limitations
+- FX: the free provider refreshes rates once a day, so rates are at most about 24 h old even when `source` is `LIVE`. The built-in fallback table (used only if the provider has never been reached) is a snapshot from 2026-10-29 and drifts from the market.
+- FX: the rates cache is per process (single instance assumed, ADR-011); several replicas would each call the provider (still within its hourly guidance).
+
 ## What I'd do with more time
+
+## Credits
+Exchange rates: [Rates By Exchange Rate API](https://www.exchangerate-api.com) (open.er-api.com free endpoint; attribution required by its terms).
