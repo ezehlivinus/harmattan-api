@@ -1,6 +1,9 @@
 import { Command } from '@nestjs/cqrs';
 import type { IdempotentResult } from '../../../../../shared/application/idempotency.service.js';
-import type { BalanceView, TransactionView } from '../../transaction.view.js';
+import type {
+  BalanceView,
+  TransactionView,
+} from '../../../../../shared/application/transaction.view.js';
 
 export interface TransferView {
   transaction: TransactionView;

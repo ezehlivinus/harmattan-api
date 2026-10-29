@@ -2,7 +2,7 @@ import type { TransactionContext } from '../../../../shared/application/unit-of-
 import type { Money } from '../../../../shared/domain/money.js';
 import type { BalanceChange } from '../../domain/balance-change.js';
 import type { Posting } from '../../domain/posting.js';
-import type { TransactionView } from '../transaction.view.js';
+import type { TransactionView } from '../../../../shared/application/transaction.view.js';
 
 export interface NewTransaction {
   id: string;

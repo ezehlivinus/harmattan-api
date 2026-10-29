@@ -1,6 +1,6 @@
-import type { Currency } from '../../../shared/domain/currency.js';
+import type { Currency } from '../domain/currency.js';
 
-/** A money movement as returned by the API (also used by history in Phase 5). */
+/** A money movement as returned by the API (payments results and history). */
 export interface TransactionView {
   id: string;
   type: 'DEPOSIT' | 'SWAP' | 'TRANSFER';

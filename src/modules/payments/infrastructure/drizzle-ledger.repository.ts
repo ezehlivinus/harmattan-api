@@ -6,6 +6,7 @@ import { newId } from '../../../shared/domain/id.js';
 import { Money } from '../../../shared/domain/money.js';
 import type { DatabaseTransaction } from '../../../shared/infrastructure/database/database.js';
 import { drizzleTx } from '../../../shared/infrastructure/database/drizzle-unit-of-work.js';
+import { toTransactionView } from '../../../shared/infrastructure/database/transaction-row.js';
 import {
   balances,
   ledgerEntries,
@@ -13,7 +14,7 @@ import {
   wallets,
 } from '../../../shared/infrastructure/database/schema/index.js';
 import type { LedgerRepository, NewTransaction } from '../application/ports/ledger.repository.js';
-import type { TransactionView } from '../application/transaction.view.js';
+import type { TransactionView } from '../../../shared/application/transaction.view.js';
 import type { BalanceChange } from '../domain/balance-change.js';
 import { InsufficientFundsError } from '../domain/errors.js';
 import type { Posting } from '../domain/posting.js';
@@ -131,20 +132,7 @@ export class DrizzleLedgerRepository implements LedgerRepository {
         createdAt: transaction.createdAt,
       })),
     );
-    return {
-      id: row.id,
-      type: row.type,
-      sourceWalletId: row.sourceWalletId,
-      destinationWalletId: row.destinationWalletId,
-      sourceAmount: row.sourceAmount,
-      sourceCurrency: row.sourceCurrency,
-      destinationAmount: row.destinationAmount,
-      destinationCurrency: row.destinationCurrency,
-      rate: row.rate,
-      rateSource: row.rateSource,
-      rateFetchedAt: row.rateFetchedAt?.toISOString() ?? null,
-      createdAt: row.createdAt.toISOString(),
-    };
+    return toTransactionView(row);
   }
 }
 
