@@ -20,3 +20,11 @@ export class WalletNotFoundError extends DomainError {
     super('Wallet not found', { walletId });
   }
 }
+
+export class TransactionNotFoundError extends DomainError {
+  readonly code = ErrorCode.TRANSACTION_NOT_FOUND;
+
+  constructor(transactionId: string) {
+    super('Transaction not found', { transactionId });
+  }
+}

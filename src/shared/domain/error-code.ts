@@ -14,6 +14,7 @@ export const ErrorCode = {
   SAME_CURRENCY: 'SAME_CURRENCY',
   AMOUNT_TOO_SMALL: 'AMOUNT_TOO_SMALL',
   SELF_TRANSFER: 'SELF_TRANSFER',
+  TRANSACTION_NOT_FOUND: 'TRANSACTION_NOT_FOUND',
 } as const;
 
 export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];

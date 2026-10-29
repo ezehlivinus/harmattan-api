@@ -875,6 +875,235 @@
         "summary": "Transfer to another wallet, converting if the currencies differ",
         "tags": ["payments"]
       }
+    },
+    "/v1/wallets/{walletId}/transactions": {
+      "get": {
+        "description": "Deposits, swaps, and transfers sent and received. Cursor-paginated (stable while new transactions arrive); filter by `type` and by `currency` (source or destination).",
+        "operationId": "TransactionsController_list",
+        "parameters": [
+          {
+            "name": "walletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "description": "What the transaction was for this wallet",
+            "schema": {
+              "description": "What the transaction was for this wallet",
+              "type": "string",
+              "enum": ["DEPOSIT", "SWAP", "TRANSFER_IN", "TRANSFER_OUT"]
+            }
+          },
+          {
+            "name": "currency",
+            "required": false,
+            "in": "query",
+            "description": "Matches the source or destination currency",
+            "schema": {
+              "description": "Matches the source or destination currency",
+              "type": "string",
+              "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+              "example": "cNGN"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "1-100",
+            "schema": {
+              "default": 20,
+              "description": "1-100",
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100
+            }
+          },
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "nextCursor from the previous page",
+            "schema": {
+              "description": "nextCursor from the previous page",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransactionHistoryPage"
+                },
+                "example": {
+                  "items": [
+                    {
+                      "id": "019a3b5d-0a1b-7c2d-8e3f-4a5b6c7d8e9f",
+                      "type": "TRANSFER",
+                      "sourceWalletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b",
+                      "destinationWalletId": "019a3b5c-9f3a-7b21-8c5d-2e3f4a5b6c7d",
+                      "sourceAmount": "800.000000",
+                      "sourceCurrency": "cNGN",
+                      "destinationAmount": "0.450000",
+                      "destinationCurrency": "EURx",
+                      "rate": "0.000562500000000000",
+                      "rateSource": "LIVE",
+                      "rateFetchedAt": "2026-10-29T00:02:31.000Z",
+                      "createdAt": "2026-10-29T12:00:00.000Z",
+                      "entryType": "TRANSFER_OUT"
+                    }
+                  ],
+                  "nextCursor": null
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid wallet id, type, currency, limit or cursor.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "message": "Request validation failed",
+                    "details": {
+                      "issues": [
+                        {
+                          "path": "limit",
+                          "message": "Too big: expected number to be <=100"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No wallet with this id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "WALLET_NOT_FOUND",
+                    "message": "Wallet not found",
+                    "details": {
+                      "walletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "List a wallet's transactions, newest first",
+        "tags": ["transactions"]
+      }
+    },
+    "/v1/transactions/{transactionId}": {
+      "get": {
+        "operationId": "TransactionsController_get",
+        "parameters": [
+          {
+            "name": "transactionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Transaction"
+                },
+                "example": {
+                  "id": "019a3b5d-0a1b-7c2d-8e3f-4a5b6c7d8e9f",
+                  "type": "TRANSFER",
+                  "sourceWalletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b",
+                  "destinationWalletId": "019a3b5c-9f3a-7b21-8c5d-2e3f4a5b6c7d",
+                  "sourceAmount": "800.000000",
+                  "sourceCurrency": "cNGN",
+                  "destinationAmount": "0.450000",
+                  "destinationCurrency": "EURx",
+                  "rate": "0.000562500000000000",
+                  "rateSource": "LIVE",
+                  "rateFetchedAt": "2026-10-29T00:02:31.000Z",
+                  "createdAt": "2026-10-29T12:00:00.000Z"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The id is not a UUID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "message": "Request validation failed",
+                    "details": {
+                      "issues": [
+                        {
+                          "path": "transactionId",
+                          "message": "Invalid UUID"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No transaction with this id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "TRANSACTION_NOT_FOUND",
+                    "message": "Transaction not found",
+                    "details": {
+                      "transactionId": "019a3b5d-0a1b-7c2d-8e3f-4a5b6c7d8e9f"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a transaction by id",
+        "tags": ["transactions"]
+      }
     }
   },
   "info": {
@@ -1366,6 +1595,109 @@
           }
         },
         "required": ["transaction", "senderBalance"],
+        "additionalProperties": false
+      },
+      "TransactionHistoryPage": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "type": {
+                  "type": "string",
+                  "enum": ["DEPOSIT", "SWAP", "TRANSFER"]
+                },
+                "sourceWalletId": {
+                  "nullable": true,
+                  "description": "Null for deposits",
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "destinationWalletId": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "sourceAmount": {
+                  "type": "string",
+                  "example": "1500.250000"
+                },
+                "sourceCurrency": {
+                  "type": "string",
+                  "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+                  "description": "Supported stablecoin",
+                  "example": "cNGN"
+                },
+                "destinationAmount": {
+                  "type": "string",
+                  "example": "1500.250000"
+                },
+                "destinationCurrency": {
+                  "type": "string",
+                  "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+                  "description": "Supported stablecoin",
+                  "example": "cNGN"
+                },
+                "rate": {
+                  "type": "string",
+                  "description": "Units of destination per unit of source (18 decimals); 1 when currencies match",
+                  "example": "1.000000000000000000"
+                },
+                "rateSource": {
+                  "nullable": true,
+                  "type": "string",
+                  "enum": ["LIVE", "CACHED", "FALLBACK"]
+                },
+                "rateFetchedAt": {
+                  "nullable": true,
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                },
+                "entryType": {
+                  "type": "string",
+                  "enum": ["DEPOSIT", "SWAP", "TRANSFER_IN", "TRANSFER_OUT"],
+                  "description": "DEPOSIT, SWAP, or TRANSFER_IN / TRANSFER_OUT from this wallet’s point of view"
+                }
+              },
+              "required": [
+                "id",
+                "type",
+                "sourceWalletId",
+                "destinationWalletId",
+                "sourceAmount",
+                "sourceCurrency",
+                "destinationAmount",
+                "destinationCurrency",
+                "rate",
+                "rateSource",
+                "rateFetchedAt",
+                "createdAt",
+                "entryType"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "nextCursor": {
+            "nullable": true,
+            "description": "Null on the last page",
+            "type": "string"
+          }
+        },
+        "required": ["items", "nextCursor"],
         "additionalProperties": false
       }
     }
