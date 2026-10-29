@@ -12,7 +12,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] `nest new` (ESM, Yarn); strict TS + `noUncheckedIndexedAccess`; pin `typescript ~6.0.3` (not 7, see LEARNINGS)
 - [x] Merge the scaffold's `.gitignore` into the existing one (keep both sets of entries, drop duplicates); don't overwrite README/docs
 - [x] Yarn 4 (`.yarnrc.yml` `nodeLinker: node-modules`, `packageManager` field)
-- [ ] Replace oxlint → ESLint flat config + Prettier; `lint`, `format`, `typecheck` scripts
+- [x] Replace oxlint → ESLint flat config + Prettier; `lint`, `format`, `typecheck` scripts (+ lint rule: `domain/` may not import Nest/Drizzle/HTTP or outer layers)
 - [ ] husky + commitlint (`@commitlint/config-conventional`, `trailer-exists: [2, 'never', 'Co-Authored-By:']`, `scope-enum`)
 - [ ] Clean-arch folder skeleton (`shared/`, `modules/*/{domain,application,infrastructure,presentation}`), `CqrsModule`
 - [ ] `@nestjs/config` with Zod-validated env
