@@ -1,8 +1,16 @@
-// Conventional Commits + no attribution trailers.
-// Install: yarn add -D @commitlint/cli @commitlint/config-conventional husky && yarn husky init
-// .husky/commit-msg:  yarn commitlint --edit "$1"
+// @ts-check
+// Conventional Commits + no co-author trailers. Runs from .husky/commit-msg.
+
+/** Built-in `trailer-exists` is case-sensitive; this also catches `Co-authored-by:`. */
+const noCoAuthorTrailer = (/** @type {{ raw?: string }} */ parsed) => {
+  const found = /^co-authored-by:/im.test(parsed.raw ?? '');
+  return /** @type {const} */ ([!found, 'message must not have a Co-Authored-By trailer']);
+};
+
+/** @type {import('@commitlint/types').UserConfig} */
 export default {
   extends: ['@commitlint/config-conventional'],
+  plugins: [{ rules: { 'no-co-author-trailer': noCoAuthorTrailer } }],
   rules: {
     'scope-enum': [
       2,
@@ -22,6 +30,6 @@ export default {
     ],
     'subject-case': [2, 'always', 'lower-case'],
     'header-max-length': [2, 'always', 72],
-    'trailer-exists': [2, 'never', 'Co-Authored-By:'],
+    'no-co-author-trailer': [2, 'always'],
   },
 };
