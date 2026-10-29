@@ -60,11 +60,13 @@ Context: Three common options for storing money:
 Postgres' `money` type is also rejected: its precision depends on the `lc_monetary` locale.
 Decision: Decimal strings in JSON (`"1500.25"`); `NUMERIC(38,6)` amounts, `NUMERIC(38,18)` rates; Drizzle `numeric` in string mode; `decimal.js` for arithmetic. Every amount column has a currency column beside it. Round **down** on conversion; reject input with more than 6 dp instead of rounding it.
 Consequences: No float anywhere; SQL and stored values stay human-readable; the DB rejects out-of-scale values. Rounding dust stays with the platform's FX pool (documented).
+**Update 2026-10-29:** amounts are returned with a fixed 6 decimals (`"1500.250000"`), the same text Postgres returns for `numeric(38,6)`, so every amount in the API has one canonical form. Input accepts 0–6 decimals. `Money` is non-negative (signs live in ledger postings); 32 integer digits max. Ids are UUIDv7 from Node's built-in `crypto.randomUUIDv7()` (Node ≥ 24.16), so no `uuid` dependency.
 
 ## ADR-008: Double-entry ledger + transactions + materialized balances
 Accepted · 2026-10-29
 Decision: `transactions` (one row per operation) + `ledger_entries` (signed postings per account and currency) + `balances` (running total per wallet and currency, updated in the same tx). Postings for one transaction sum to zero **per currency**, using system accounts that are not wallets: `EXTERNAL_SETTLEMENT` (counterparty for deposits) and `FX_POOL` per currency (counterparty for swaps and cross-currency transfers). Example, swap 1000 cNGN → USDx: wallet cNGN −1000, FX_POOL cNGN +1000, FX_POOL USDx −0.625, wallet USDx +0.625.
 Consequences: O(1) balance reads; auditable history; the FX pool shows platform exposure and rounding dust. Invariant tests: Σ ledger per (wallet, currency) == balance, and Σ per (transaction, currency) == 0. `CHECK (amount <> 0)` on postings; system accounts have no non-negative constraint.
+**Update 2026-10-29:** system accounts are not rows. A posting names its account as `(account_type, wallet_id, currency)`: `(WALLET, <id>, ccy)`, `(EXTERNAL_SETTLEMENT, NULL, ccy)` or `(FX_POOL, NULL, ccy)`, enforced by `CHECK ((account_type = 'WALLET') = (wallet_id IS NOT NULL))`. No accounts table and no seed; an FX pool's position is `SUM(amount)` over its postings. Transactions carry `source_*`/`destination_*` columns with DB CHECKs for each type's shape (DEPOSIT: no sender, same currency and amount; SWAP: one wallet, two currencies; TRANSFER: two wallets) and for the FX fields (rate = 1 and no source iff same currency).
 
 ## ADR-009: Testcontainers for e2e
 Accepted · 2026-10-29

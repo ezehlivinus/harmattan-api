@@ -22,13 +22,13 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] Swagger at `/docs` (+ `/docs/openapi.json`); `yarn openapi` writes `openapi.json`; e2e fails if the committed spec is stale
 
 ## Phase 1: Shared kernel + schema
-- [ ] `shared/domain`: `Currency`, `Money` (parse string, scale 6, roundDown, add/sub/mul, compare), `DomainError`, UUIDv7
-- [ ] Unit tests: `"0"`, `"-1"`, `"1e3"`, `"1.0000001"`, `" 5"`, huge values, rounding
-- [ ] e2e helper: truncate tables between tests (once tables exist)
-- [ ] Drizzle schema: `wallets`, `balances`, `transactions`, `ledger_entries`, `fx_rates`, `idempotency_keys` + CHECK/unique/indexes (cursor index on `(wallet_id, created_at desc, id desc)`)
-- [ ] CHECKs: `balances.amount >= 0`, `ledger_entries.amount <> 0`, `transactions` amounts `> 0`; currency column next to every amount (ADR-007)
-- [ ] System accounts seeded: `EXTERNAL_SETTLEMENT` and one `FX_POOL` per currency (ADR-008); add the idempotent seed step to the container start (`migrate.js && seed.js && main.js`)
-- [ ] First migration generated + reviewed by hand
+- [x] `shared/domain`: `Currency`, `Money` (parse string, scale 6, roundDown, add/sub/convert, compare), `DomainError` + `ErrorCode`, UUIDv7 (Node built-in `crypto.randomUUIDv7`)
+- [x] Unit tests: `"0"`, `"-1"`, `"1e3"`, `"1.0000001"`, `" 5"`, huge values, rounding
+- [x] e2e helper: truncate tables between tests (`test/helpers/database.ts`: `truncateAll`, `expectDbRejection`)
+- [x] Drizzle schema: `wallets`, `balances`, `transactions`, `ledger_entries`, `fx_rates`, `idempotency_keys` + CHECK/unique/indexes (history indexes on `(source|destination_wallet_id, created_at DESC, id DESC)`, NULLS FIRST so a plain `ORDER BY … DESC` uses them)
+- [x] CHECKs: `balances.amount >= 0`, `ledger_entries.amount <> 0`, `transactions` amounts `> 0`; currency column next to every amount (ADR-007); plus transaction shape/rate rules, normalized email, E.164 phone, idempotency key/hash format (35 constraint e2e tests)
+- [-] System accounts seeded: not needed. System accounts are identified by `(account_type, currency)` on postings, not rows (ADR-008 update). The container seed step moves to Phase 3 (FX fallback table)
+- [x] First migration generated + reviewed by hand (`0000_init.sql`; review fixed the phone regex escaping and the index null ordering)
 - [ ] `UnitOfWork` port + `DrizzleUnitOfWork` (retry once on 40P01/40001)
 - [ ] Error code enum + global exception filter (also wraps Nest's built-in HttpExceptions, e.g. health 503, in the error envelope) + Zod/Standard Schema pipe; shared `DecimalString`
 
@@ -42,7 +42,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 ## Phase 3: FX (FR-3, FR-5), parallel track `@B`
 - [ ] Verify `open.er-api.com` response shape → LEARNINGS
 - [ ] `FxRatesPort` + `ErApiFxProvider` (2s timeout) + cache + fallback chain + persist last-good
-- [ ] Seed fallback table
+- [ ] Seed fallback table; add the idempotent seed step to the container start (`migrate.js && seed.js && main.js`)
 - [ ] `GetRatesQuery` → E8 (5×5 matrix, `source`, `fetchedAt`)
 - [ ] Unit: provider down, timeout, malformed body, stale cache, cross-rate math
 - [ ] Decide on Redis + BullMQ FX refresher (ADR-011); confirm before adding dependencies
