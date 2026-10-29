@@ -64,7 +64,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] e2e: page boundaries, combined filters, transfer visible to both sides (+ stable under inserts; keyset mutation-checked)
 
 ## Phase 6: Ship (D1 to D6)
-- [ ] `openapi.json` final, examples on every endpoint
+- [x] `openapi.json` final, examples on every endpoint (audited: every operation has a summary and every response status a schema + example; request examples validated by `test/unit/openapi-examples.spec.ts`; `/health` uses Terminus' per-property examples)
 - [ ] README complete (checklist in README), walkthrough with real curl output
 - [ ] Traceability matrix in REQUIREMENTS.md all ☑
 - [ ] Fresh clone → `docker compose up` → walkthrough works → `yarn test` passes

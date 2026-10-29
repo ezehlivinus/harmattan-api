@@ -36,7 +36,10 @@ export const createWalletBody = z
   .refine((body) => body.email !== undefined || body.phone !== undefined, {
     message: 'Provide an email, a phone number or both',
   })
-  .meta({ id: 'CreateWalletRequest' });
+  .meta({
+    id: 'CreateWalletRequest',
+    example: { email: 'ada@example.com', phone: '0801 234 5678' },
+  });
 
 export type CreateWalletBody = z.infer<typeof createWalletBody>;
 

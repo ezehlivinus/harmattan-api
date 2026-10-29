@@ -1129,6 +1129,10 @@
             "example": "0801 234 5678",
             "type": "string"
           }
+        },
+        "example": {
+          "email": "ada@example.com",
+          "phone": "0801 234 5678"
         }
       },
       "Wallet": {
@@ -1364,7 +1368,11 @@
             "example": "1500.25"
           }
         },
-        "required": ["currency", "amount"]
+        "required": ["currency", "amount"],
+        "example": {
+          "currency": "cNGN",
+          "amount": "1500.25"
+        }
       },
       "DepositResult": {
         "type": "object",
@@ -1497,7 +1505,12 @@
             "example": "1500.25"
           }
         },
-        "required": ["fromCurrency", "toCurrency", "amount"]
+        "required": ["fromCurrency", "toCurrency", "amount"],
+        "example": {
+          "fromCurrency": "cNGN",
+          "toCurrency": "USDx",
+          "amount": "1000"
+        }
       },
       "SwapResult": {
         "type": "object",
@@ -1567,7 +1580,14 @@
           "sourceCurrency",
           "destinationCurrency",
           "amount"
-        ]
+        ],
+        "example": {
+          "fromWalletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b",
+          "toWalletId": "019a3b5c-9f3a-7b21-8c5d-2e3f4a5b6c7d",
+          "sourceCurrency": "EURx",
+          "destinationCurrency": "cGHS",
+          "amount": "10"
+        }
       },
       "TransferResult": {
         "type": "object",
