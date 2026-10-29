@@ -3,13 +3,9 @@ import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { newId } from '../../src/shared/domain/id.js';
 import { createTestApp } from '../helpers/app.js';
+import { providerUp } from '../helpers/fx.js';
 import { createTestDatabase, truncateAll } from '../helpers/database.js';
 import { expectLedgerBalanced } from '../helpers/ledger.js';
-
-const PROVIDER_BODY =
-  '{"result":"success","base_code":"USD","time_last_update_unix":1793232151,' +
-  '"time_next_update_unix":1793320461,"rates":{"USD":1,"NGN":1600,"GHS":12.5,"XAF":600,"EUR":0.9}}';
-const providerUp: typeof fetch = async () => await Promise.resolve(new Response(PROVIDER_BODY));
 
 describe('GET /v1/wallets/:walletId (e2e)', () => {
   const db = createTestDatabase();

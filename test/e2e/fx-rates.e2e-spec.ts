@@ -3,15 +3,10 @@ import request from 'supertest';
 import type { App } from 'supertest/types.js';
 import { fxRates } from '../../src/shared/infrastructure/database/schema/index.js';
 import { createTestApp } from '../helpers/app.js';
+import { providerDown, providerUp } from '../helpers/fx.js';
 import { createTestDatabase, truncateAll } from '../helpers/database.js';
 
 const CURRENCIES = ['cNGN', 'cGHS', 'cXAF', 'USDx', 'EURx'];
-const PROVIDER_BODY =
-  '{"result":"success","base_code":"USD","time_last_update_unix":1793232151,' +
-  '"time_next_update_unix":1793320461,"rates":{"USD":1,"NGN":1600,"GHS":12.5,"XAF":600,"EUR":0.9}}';
-
-const providerUp: typeof fetch = async () => await Promise.resolve(new Response(PROVIDER_BODY));
-const providerDown: typeof fetch = async () => await Promise.reject(new TypeError('fetch failed'));
 
 interface RateEntry {
   from: string;
