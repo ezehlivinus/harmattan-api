@@ -296,6 +296,51 @@
         "tags": ["wallets"]
       }
     },
+    "/v1/fx/rates": {
+      "get": {
+        "description": "All 25 pairs (5×5, including 1 for the same currency). Each stablecoin is pegged 1:1 to its fiat currency. Rates come from open.er-api.com (refreshed daily, cached for up to 1 hour); when the provider is unavailable the last good or built-in rates are returned and labelled by `source`.",
+        "operationId": "FxController_rates",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FxRates"
+                },
+                "example": {
+                  "source": "LIVE",
+                  "fetchedAt": "2026-10-29T00:02:31.000Z",
+                  "attribution": {
+                    "text": "Rates By Exchange Rate API",
+                    "url": "https://www.exchangerate-api.com"
+                  },
+                  "rates": [
+                    {
+                      "from": "USDx",
+                      "to": "cNGN",
+                      "rate": "1346.236888000000000000",
+                      "source": "LIVE",
+                      "fetchedAt": "2026-10-29T00:02:31.000Z"
+                    },
+                    {
+                      "from": "cNGN",
+                      "to": "USDx",
+                      "rate": "0.000742811320142640",
+                      "source": "LIVE",
+                      "fetchedAt": "2026-10-29T00:02:31.000Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "summary": "Current exchange rates between all supported stablecoins",
+        "tags": ["fx"]
+      }
+    },
     "/v1/wallets/{walletId}/deposits": {
       "post": {
         "description": "Credits the wallet immediately and records a DEPOSIT transaction. Repeating a request with the same Idempotency-Key and body returns the original response without moving money again.",
@@ -538,6 +583,75 @@
           }
         },
         "required": ["error"],
+        "additionalProperties": false
+      },
+      "FxRates": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": ["LIVE", "CACHED", "FALLBACK"],
+            "description": "LIVE: from the provider. CACHED: last good provider rates (provider unavailable). FALLBACK: built-in table (provider never reached)."
+          },
+          "fetchedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "When the provider last refreshed the rates"
+          },
+          "attribution": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "url": {
+                "type": "string",
+                "format": "uri"
+              }
+            },
+            "required": ["text", "url"],
+            "additionalProperties": false
+          },
+          "rates": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "from": {
+                  "type": "string",
+                  "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+                  "description": "Supported stablecoin",
+                  "example": "cNGN"
+                },
+                "to": {
+                  "type": "string",
+                  "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+                  "description": "Supported stablecoin",
+                  "example": "cNGN"
+                },
+                "rate": {
+                  "type": "string",
+                  "description": "Units of `to` per 1 `from`, 18 decimals"
+                },
+                "source": {
+                  "type": "string",
+                  "enum": ["LIVE", "CACHED", "FALLBACK"],
+                  "description": "LIVE: from the provider. CACHED: last good provider rates (provider unavailable). FALLBACK: built-in table (provider never reached)."
+                },
+                "fetchedAt": {
+                  "type": "string",
+                  "format": "date-time",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                  "description": "When the provider last refreshed the rates"
+                }
+              },
+              "required": ["from", "to", "rate", "source", "fetchedAt"],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": ["source", "fetchedAt", "attribution", "rates"],
         "additionalProperties": false
       },
       "DepositRequest": {

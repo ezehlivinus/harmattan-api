@@ -26,4 +26,4 @@ COPY --from=build --chown=node:node /app/dist ./dist
 COPY --chown=node:node package.json ./
 USER node
 EXPOSE 3000
-CMD ["sh", "-c", "node dist/shared/infrastructure/database/migrate.js && exec node dist/main.js"]
+CMD ["sh", "-c", "node dist/shared/infrastructure/database/migrate.js && node dist/shared/infrastructure/database/seed.js && exec node dist/main.js"]

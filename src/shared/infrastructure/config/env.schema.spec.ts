@@ -8,6 +8,10 @@ describe('envSchema', () => {
       NODE_ENV: 'development',
       PORT: 3000,
       DATABASE_URL,
+      FX_API_URL: 'https://open.er-api.com/v6/latest/USD',
+      FX_TIMEOUT_MS: 2000,
+      FX_CACHE_TTL_SECONDS: 3600,
+      FX_FAILURE_CACHE_TTL_SECONDS: 300,
     });
   });
 
