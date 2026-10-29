@@ -59,9 +59,9 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] Ledger invariant helper runs after every money e2e: Σ ledger per (wallet, currency) == balance, and Σ per (transaction, currency) == 0 (`test/helpers/ledger.ts`, used from the deposit e2e on)
 
 ## Phase 5: History (FR-5)
-- [ ] `ListWalletTransactionsQuery` → E6 (newest first, cursor, `type`, `currency`, IN/OUT direction)
-- [ ] `GetTransactionQuery` → E7
-- [ ] e2e: page boundaries, combined filters, transfer visible to both sides
+- [x] `ListWalletTransactionsQuery` → E6 (newest first, keyset cursor on (createdAt, id), `type` = DEPOSIT/SWAP/TRANSFER_IN/TRANSFER_OUT per wallet (`entryType`), `currency` either side)
+- [x] `GetTransactionQuery` → E7 (404 TRANSACTION_NOT_FOUND)
+- [x] e2e: page boundaries, combined filters, transfer visible to both sides (+ stable under inserts; keyset mutation-checked)
 
 ## Phase 6: Ship (D1 to D6)
 - [ ] `openapi.json` final, examples on every endpoint

@@ -109,8 +109,8 @@ Supported stablecoins: **cNGN, cGHS, cXAF, USDx, EURx**.
 | FR-3 no double processing | `IdempotencyService` (key row in the movement's tx) | `deposits.e2e-spec.ts` 10 parallel identical, `swaps.e2e-spec.ts` replay, `idempotency.service.spec.ts` | ☑ |
 | FR-4 transfer same/cross ccy | E5 · `TransferHandler`, `Transfer` | `transfers.e2e-spec.ts` (+ ledger invariants, A↔B parallel), `transfer.spec.ts` | ☑ |
 | FR-4 recorded fields | `transactions` columns + shape/rate CHECKs | `transfers.e2e-spec.ts` (every field), `schema.e2e-spec.ts` | ☑ |
-| FR-5 history newest-first, paged, filtered | E6 | | ☐ |
-| FR-5 get by id | E7 | | ☐ |
+| FR-5 history newest-first, paged, filtered | E6 · `ListWalletTransactionsHandler`, `DrizzleTransactionReadModel` (keyset on created_at, id) | `history.e2e-spec.ts`, `cursor.spec.ts` | ☑ |
+| FR-5 get by id | E7 · `GetTransactionHandler` | `history.e2e-spec.ts` | ☑ |
 | FR-5 rates matrix + refreshed time | E8 · `GetRatesHandler` (25 pairs, `source`, `fetchedAt` = provider refresh) | `fx-rates.e2e-spec.ts`, `rate-table.spec.ts` | ☑ |
 | D3 one-command start | compose + entrypoint | fresh-clone check | ☐ |
 | D4 yarn test passes | Vitest config | CI/local | ☐ |
