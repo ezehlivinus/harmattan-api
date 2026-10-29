@@ -50,7 +50,7 @@ endpoint (an e2e test fails when it is out of date). Health check: `GET /health`
 | ORM | Drizzle (`@nestjs/drizzle`) | |
 | Validation | Zod 4 (Standard Schema) | |
 | Tests | Vitest + Supertest + Testcontainers | |
-| Cache/queue | None (ADR-011) | |
+| Cache/queue | None (ADR-011) | Money moves synchronously in one Postgres transaction; FX uses a 1 h in-memory cache with DB fallback |
 
 ### Why PostgreSQL
 <!-- ADR-002 -->

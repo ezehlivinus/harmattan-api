@@ -46,7 +46,7 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] Seed fallback table; add the idempotent seed step to the container start (`migrate.js && seed.js && main.js`)
 - [x] `GetRatesQuery` → E8 (5×5 matrix, `source`, `fetchedAt`, provider attribution)
 - [x] Unit: provider down, timeout, malformed body, stale cache, cross-rate math (+ e2e LIVE → CACHED → FALLBACK with an injected `fetch`)
-- [ ] Decide on Redis + BullMQ FX refresher (ADR-011); confirm before adding dependencies
+- [x] Decide on Redis + BullMQ FX refresher (ADR-011): no; accepted 2026-10-30
 
 ## Phase 4: Swaps + Transfers (FR-3, FR-4)
 - [ ] `SwapCommand` → E4 (same-currency 422, insufficient funds 422)
@@ -79,4 +79,4 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [ ] GitHub Actions: lint + test
 
 ## Out of scope
-Auth/KYC, fees/spreads, real chain, fiat withdrawals, event sourcing. Redis/queues pending ADR-011.
+Auth/KYC, fees/spreads, real chain, fiat withdrawals, event sourcing, Redis/queues (ADR-011).
