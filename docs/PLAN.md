@@ -18,18 +18,19 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 - [x] `@nestjs/config` with Zod-validated env (`NODE_ENV`, `PORT`; `.env.example`)
 - [x] `@nestjs/drizzle` module + `drizzle.config.ts` (add `DATABASE_URL` to `envSchema` + `.env.example`); `db:generate` / `db:migrate` scripts (fallback per ADR-003: not needed)
 - [x] Dockerfile (multi-stage) + `docker-compose.yml` (api, postgres + healthcheck); container start: migrate → start (`HUSKY=0`, postinstall stripped in prod-deps stage, runtime migrator, migrations copied as Nest assets, graceful SIGTERM)
-- [ ] Vitest (unit + e2e projects) + Supertest + Testcontainers; e2e `GET /health` green (replace the placeholder `DATABASE_URL` in `vitest.config.e2e.ts`)
-- [ ] Swagger at `/docs`; `yarn openapi` writes `openapi.json`
+- [x] Vitest (unit + e2e projects) + Supertest + Testcontainers; e2e `GET /health` green (one container per run via `globalSetup`, migrated, URL passed with `provide`/`inject`; `/health` via `@nestjs/terminus` + custom Drizzle indicator; compose api healthcheck)
+- [x] Swagger at `/docs` (+ `/docs/openapi.json`); `yarn openapi` writes `openapi.json`; e2e fails if the committed spec is stale
 
 ## Phase 1: Shared kernel + schema
 - [ ] `shared/domain`: `Currency`, `Money` (parse string, scale 6, roundDown, add/sub/mul, compare), `DomainError`, UUIDv7
 - [ ] Unit tests: `"0"`, `"-1"`, `"1e3"`, `"1.0000001"`, `" 5"`, huge values, rounding
+- [ ] e2e helper: truncate tables between tests (once tables exist)
 - [ ] Drizzle schema: `wallets`, `balances`, `transactions`, `ledger_entries`, `fx_rates`, `idempotency_keys` + CHECK/unique/indexes (cursor index on `(wallet_id, created_at desc, id desc)`)
 - [ ] CHECKs: `balances.amount >= 0`, `ledger_entries.amount <> 0`, `transactions` amounts `> 0`; currency column next to every amount (ADR-007)
 - [ ] System accounts seeded: `EXTERNAL_SETTLEMENT` and one `FX_POOL` per currency (ADR-008); add the idempotent seed step to the container start (`migrate.js && seed.js && main.js`)
 - [ ] First migration generated + reviewed by hand
 - [ ] `UnitOfWork` port + `DrizzleUnitOfWork` (retry once on 40P01/40001)
-- [ ] Error code enum + global exception filter + Zod/Standard Schema pipe; shared `DecimalString`
+- [ ] Error code enum + global exception filter (also wraps Nest's built-in HttpExceptions, e.g. health 503, in the error envelope) + Zod/Standard Schema pipe; shared `DecimalString`
 
 ## Phase 2: Wallets + Deposits + Idempotency (FR-1, FR-2)
 - [ ] `CreateWalletCommand` (normalize email/E.164; 409 duplicate; 5 zero balances) → E1

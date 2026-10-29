@@ -33,7 +33,12 @@ yarn start:dev
 ```bash
 corepack enable && yarn install
 yarn test          # unit + e2e; requires Docker (Testcontainers starts Postgres)
+yarn test:unit     # domain and handler tests, no Docker needed
+yarn test:e2e      # HTTP tests against a real Postgres container
 ```
+
+The OpenAPI spec is committed as `openapi.json`; regenerate it with `yarn openapi` after changing an
+endpoint (an e2e test fails when it is out of date). Health check: `GET /health`.
 
 ## Tech stack & why
 | | Choice | Why |

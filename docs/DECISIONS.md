@@ -48,6 +48,7 @@ Proposed · 2026-10-29
 Context: NestJS 12 accepts Standard Schema in `@Body/@Query/@Param`; Swagger generation from Zod may need glue.
 Decision: Zod schemas are the source of truth (shared `DecimalString`, `CurrencyCode`). Verify OpenAPI emission (Nest docs → Zod 4 `toJSONSchema` → `nestjs-zod`).
 Consequences: If the OpenAPI glue costs more than 1h, use class-validator DTOs for request bodies and supersede.
+**Update 2026-10-29:** output side verified with no glue: `@nestjs/swagger` 12 converts Zod 4 schemas natively (`@ApiOkResponse({ standardSchema })`, via Zod's `~standard.jsonSchema`); literals → `enum`, `required` and `additionalProperties: false` emitted. Request side (Standard Schema in `@Body/@Query/@Param` + docs) still to verify with the first endpoint that takes a body.
 
 ## ADR-007: Money representation
 Accepted · 2026-10-29
