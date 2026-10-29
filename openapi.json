@@ -296,6 +296,117 @@
         "tags": ["wallets"]
       }
     },
+    "/v1/wallets/{walletId}": {
+      "get": {
+        "description": "Every balance with its USD value at the current rates, and the total. `ratesAsOf` and `ratesSource` say which rates were used (see GET /v1/fx/rates).",
+        "operationId": "WalletsController_get",
+        "parameters": [
+          {
+            "name": "walletId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletDetails"
+                },
+                "example": {
+                  "id": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b",
+                  "email": "ada@example.com",
+                  "phone": "+2348012345678",
+                  "createdAt": "2026-10-29T12:00:00.000Z",
+                  "balances": [
+                    {
+                      "currency": "cNGN",
+                      "amount": "1600.000000",
+                      "usdValue": "1.000000"
+                    },
+                    {
+                      "currency": "cGHS",
+                      "amount": "0.000000",
+                      "usdValue": "0.000000"
+                    },
+                    {
+                      "currency": "cXAF",
+                      "amount": "1000.000000",
+                      "usdValue": "1.666666"
+                    },
+                    {
+                      "currency": "USDx",
+                      "amount": "1.500000",
+                      "usdValue": "1.500000"
+                    },
+                    {
+                      "currency": "EURx",
+                      "amount": "9.000000",
+                      "usdValue": "10.000000"
+                    }
+                  ],
+                  "totalUsd": "14.166666",
+                  "ratesAsOf": "2026-10-29T00:02:31.000Z",
+                  "ratesSource": "LIVE"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "The wallet id is not a UUID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "VALIDATION_ERROR",
+                    "message": "Request validation failed",
+                    "details": {
+                      "issues": [
+                        {
+                          "path": "walletId",
+                          "message": "Invalid UUID"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No wallet with this id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": {
+                    "code": "WALLET_NOT_FOUND",
+                    "message": "Wallet not found",
+                    "details": {
+                      "walletId": "019a3b5c-7d2e-7f10-8a4b-1c2d3e4f5a6b"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "summary": "Get a wallet with balances and total value in USD",
+        "tags": ["wallets"]
+      }
+    },
     "/v1/fx/rates": {
       "get": {
         "description": "All 25 pairs (5×5, including 1 for the same currency). Each stablecoin is pegged 1:1 to its fiat currency. Rates come from open.er-api.com (refreshed daily, cached for up to 1 hour); when the provider is unavailable the last good or built-in rates are returned and labelled by `source`.",
@@ -583,6 +694,80 @@
           }
         },
         "required": ["error"],
+        "additionalProperties": false
+      },
+      "WalletDetails": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "email": {
+            "nullable": true,
+            "type": "string"
+          },
+          "phone": {
+            "nullable": true,
+            "type": "string"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          },
+          "balances": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "currency": {
+                  "type": "string",
+                  "enum": ["cNGN", "cGHS", "cXAF", "USDx", "EURx"],
+                  "description": "Supported stablecoin",
+                  "example": "cNGN"
+                },
+                "amount": {
+                  "type": "string",
+                  "example": "1600.000000"
+                },
+                "usdValue": {
+                  "type": "string",
+                  "example": "14.166666",
+                  "description": "amount ÷ units per USD at the current rate, rounded down to 6 decimals"
+                }
+              },
+              "required": ["currency", "amount", "usdValue"],
+              "additionalProperties": false
+            }
+          },
+          "totalUsd": {
+            "type": "string",
+            "example": "14.166666",
+            "description": "Sum of the balances’ usdValue"
+          },
+          "ratesAsOf": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "description": "When the provider last refreshed the rates"
+          },
+          "ratesSource": {
+            "type": "string",
+            "enum": ["LIVE", "CACHED", "FALLBACK"]
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "phone",
+          "createdAt",
+          "balances",
+          "totalUsd",
+          "ratesAsOf",
+          "ratesSource"
+        ],
         "additionalProperties": false
       },
       "FxRates": {

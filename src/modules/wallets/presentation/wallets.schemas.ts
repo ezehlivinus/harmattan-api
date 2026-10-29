@@ -51,3 +51,28 @@ export const walletResponse = z
       .meta({ description: `One entry per currency, in this order: ${CURRENCIES.join(', ')}` }),
   })
   .meta({ id: 'Wallet' });
+
+export const walletParams = z.object({ walletId: z.uuid() });
+
+const usdAmount = z.string().meta({ example: '14.166666' });
+
+export const walletDetailsResponse = z
+  .object({
+    id: z.uuid(),
+    email: z.string().nullable(),
+    phone: z.string().nullable(),
+    createdAt: z.iso.datetime(),
+    balances: z.array(
+      z.object({
+        currency: currencyCode,
+        amount: z.string().meta({ example: '1600.000000' }),
+        usdValue: usdAmount.meta({
+          description: 'amount ÷ units per USD at the current rate, rounded down to 6 decimals',
+        }),
+      }),
+    ),
+    totalUsd: usdAmount.meta({ description: 'Sum of the balances’ usdValue' }),
+    ratesAsOf: z.iso.datetime().meta({ description: 'When the provider last refreshed the rates' }),
+    ratesSource: z.enum(['LIVE', 'CACHED', 'FALLBACK']),
+  })
+  .meta({ id: 'WalletDetails' });
