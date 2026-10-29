@@ -107,8 +107,8 @@ Supported stablecoins: **cNGN, cGHS, cXAF, USDx, EURx**.
 | FR-3 live FX + fallback | `FxRatesService` (cache → `ErApiFxProvider` → stored → built-in) | `fx-rates.service.spec.ts`, `er-api-fx.provider.spec.ts`, `fx-rates.e2e-spec.ts` | ☑ |
 | FR-3 no negative balance | conditional `UPDATE … WHERE amount >= x` + `CHECK (amount >= 0)` | `swaps.e2e-spec.ts` 50 parallel vs balance for 10 (mutation-checked) | ☑ |
 | FR-3 no double processing | `IdempotencyService` (key row in the movement's tx) | `deposits.e2e-spec.ts` 10 parallel identical, `swaps.e2e-spec.ts` replay, `idempotency.service.spec.ts` | ☑ |
-| FR-4 transfer same/cross ccy | E5 · `TransferHandler` | | ☐ |
-| FR-4 recorded fields | `transactions` columns + shape/rate CHECKs | `schema.e2e-spec.ts` (columns); transfer e2e pending | ◐ |
+| FR-4 transfer same/cross ccy | E5 · `TransferHandler`, `Transfer` | `transfers.e2e-spec.ts` (+ ledger invariants, A↔B parallel), `transfer.spec.ts` | ☑ |
+| FR-4 recorded fields | `transactions` columns + shape/rate CHECKs | `transfers.e2e-spec.ts` (every field), `schema.e2e-spec.ts` | ☑ |
 | FR-5 history newest-first, paged, filtered | E6 | | ☐ |
 | FR-5 get by id | E7 | | ☐ |
 | FR-5 rates matrix + refreshed time | E8 · `GetRatesHandler` (25 pairs, `source`, `fetchedAt` = provider refresh) | `fx-rates.e2e-spec.ts`, `rate-table.spec.ts` | ☑ |

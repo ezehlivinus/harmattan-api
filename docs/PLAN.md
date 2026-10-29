@@ -50,12 +50,12 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 
 ## Phase 4: Swaps + Transfers (FR-3, FR-4)
 - [x] `SwapCommand` → E4 (same-currency 422, insufficient funds 422, too-small 422; rate fetched before the DB tx; one `applyBalanceChanges` path for every balance mutation)
-- [ ] `TransferCommand` → E5 (cross-ccy, self-transfer 422, unknown wallet 404, lock order)
-- [ ] Transaction stores sender, receiver, src amt/ccy, dst amt/ccy, rate, rate source, fetchedAt, createdAt
-- [ ] e2e: happy paths + error cases + exact cross-currency math
+- [x] `TransferCommand` → E5 (cross-ccy, self-transfer 422, unknown wallet 404 before funds, lock order; response shows only the sender's balance)
+- [x] Transaction stores sender, receiver, src amt/ccy, dst amt/ccy, rate, rate source, fetchedAt, createdAt
+- [x] e2e: happy paths + error cases + exact cross-currency math
 - [x] **Concurrency:** 50 parallel debits vs balance covering 10 → exactly 10 succeed, balance 0 (swaps; plus opposite swaps on one wallet, no deadlock)
-- [ ] **Concurrency:** A→B and B→A in parallel → no deadlock, totals conserved
-- [x] **Idempotency:** 10 parallel identical requests, same key → 1 movement, identical responses (deposits; swaps replay tested; repeat for transfers)
+- [x] **Concurrency:** A→B and B→A in parallel → no deadlock, totals conserved (50 transfers, mutation-checked)
+- [x] **Idempotency:** 10 parallel identical requests, same key → 1 movement, identical responses (deposits and transfers; swaps replay tested)
 - [x] Ledger invariant helper runs after every money e2e: Σ ledger per (wallet, currency) == balance, and Σ per (transaction, currency) == 0 (`test/helpers/ledger.ts`, used from the deposit e2e on)
 
 ## Phase 5: History (FR-5)
