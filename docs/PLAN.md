@@ -66,8 +66,8 @@ Legend: `[ ]` todo · `[~]` in progress · `[x]` done · `[-]` cut (explain in R
 ## Phase 6: Ship (D1 to D6)
 - [x] `openapi.json` final, examples on every endpoint (audited: every operation has a summary and every response status a schema + example; request examples validated by `test/unit/openapi-examples.spec.ts`; `/health` uses Terminus' per-property examples)
 - [x] README complete (checklist in README), walkthrough with real curl output (captured from the compose stack with live rates; money values re-checked in Python)
-- [ ] Traceability matrix in REQUIREMENTS.md all ☑
-- [ ] Fresh clone → `docker compose up` → walkthrough works → `yarn test` passes
+- [x] Traceability matrix in REQUIREMENTS.md all ☑ (FR-1 to FR-5, D3 to D6; D1/D2 are the repo and its history)
+- [x] Fresh clone → `docker compose up` → walkthrough works → `yarn test` passes (2026-10-30: clone of `36ca5a9`, no excluded files present, `yarn install --immutable`, lint/format/typecheck clean, 350 tests, compose migrate+seed+healthy, 18 walkthrough calls with the README's statuses)
 - [ ] Lint/format/typecheck clean; TODOs resolved or moved to README "more time"
 - [ ] `git log` review: clean Conventional Commit history
 - [ ] Repo public

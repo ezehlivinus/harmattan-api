@@ -112,7 +112,7 @@ Supported stablecoins: **cNGN, cGHS, cXAF, USDx, EURx**.
 | FR-5 history newest-first, paged, filtered | E6 · `ListWalletTransactionsHandler`, `DrizzleTransactionReadModel` (keyset on created_at, id) | `history.e2e-spec.ts`, `cursor.spec.ts` | ☑ |
 | FR-5 get by id | E7 · `GetTransactionHandler` | `history.e2e-spec.ts` | ☑ |
 | FR-5 rates matrix + refreshed time | E8 · `GetRatesHandler` (25 pairs, `source`, `fetchedAt` = provider refresh) | `fx-rates.e2e-spec.ts`, `rate-table.spec.ts` | ☑ |
-| D3 one-command start | compose + entrypoint | fresh-clone check | ☐ |
-| D4 yarn test passes | Vitest config | CI/local | ☐ |
-| D5 OpenAPI committed | `openapi.json` (`yarn openapi`) | `openapi.e2e-spec.ts` drift check | ◐ (grows per endpoint) |
+| D3 one-command start | `docker compose up` (api + Postgres; migrate → seed → start) | fresh-clone check 2026-10-30 | ☑ |
+| D4 yarn test passes | Vitest projects (unit + e2e on Testcontainers) | fresh-clone check: 350 tests | ☑ |
+| D5 OpenAPI committed | `openapi.json` (`yarn openapi`), Swagger UI at `/docs` | `openapi.e2e-spec.ts` drift check, `openapi-examples.spec.ts` | ☑ |
 | D6 README sections | README (name, stack + why, why Postgres, setup, tests, walkthrough with real output, data model, money/idempotency/concurrency/FX failures, assumptions/limitations/more time) | section checklist, link check | ☑ |
