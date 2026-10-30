@@ -115,4 +115,4 @@ Supported stablecoins: **cNGN, cGHS, cXAF, USDx, EURx**.
 | D3 one-command start | compose + entrypoint | fresh-clone check | ☐ |
 | D4 yarn test passes | Vitest config | CI/local | ☐ |
 | D5 OpenAPI committed | `openapi.json` (`yarn openapi`) | `openapi.e2e-spec.ts` drift check | ◐ (grows per endpoint) |
-| D6 README sections | README | checklist | ☐ |
+| D6 README sections | README (name, stack + why, why Postgres, setup, tests, walkthrough with real output, data model, money/idempotency/concurrency/FX failures, assumptions/limitations/more time) | section checklist, link check | ☑ |
